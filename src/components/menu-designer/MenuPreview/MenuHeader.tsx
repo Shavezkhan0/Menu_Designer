@@ -3,10 +3,8 @@
 import { motion } from "framer-motion";
 import { useMenuDesigner } from "@/hooks/useMenuDesigner";
 
-const FONT_SIZE = { desktop: "48px", tablet: "36px", mobile: "28px" };
-
 export default function MenuHeader() {
-  const { restaurantInfo, theme, background, activeDevice } =
+  const { restaurantInfo, theme, background } =
     useMenuDesigner();
 
   const bgStyle =
@@ -23,7 +21,7 @@ export default function MenuHeader() {
       transition={{ duration: 0.4, ease: "easeOut" }}
       className="relative flex flex-col items-center justify-center overflow-hidden px-6 text-center"
       style={{
-        minHeight: activeDevice === "mobile" ? "200px" : "280px",
+        minHeight: "280px",
       }}
     >
       {/* Background layer with blur & brightness */}
@@ -54,8 +52,8 @@ export default function MenuHeader() {
             alt="Logo"
             className="mb-4 object-cover"
             style={{
-              width: "80px",
-              height: "80px",
+              width: "120px",
+              height: "120px",
               borderRadius: "50%",
               boxShadow: `0 0 0 3px ${theme.primaryColor}`,
             }}
@@ -67,7 +65,7 @@ export default function MenuHeader() {
             className="font-bold leading-tight"
             style={{
               fontFamily: theme.fontFamily,
-              fontSize: FONT_SIZE[activeDevice],
+              fontSize: "48px",
               color: theme.textColor,
             }}
           >

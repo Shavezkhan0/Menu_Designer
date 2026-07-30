@@ -29,10 +29,14 @@ export async function POST(req: NextRequest) {
 
         if (res.ok) {
           const data = await res.json();
-          const imageUrl =
+          const rawImage =
             data?.data?.[0]?.url ??
             data?.data?.[0]?.b64_json ??
             data?.url;
+          let imageUrl = rawImage;
+          if (rawImage && !rawImage.startsWith("http") && !rawImage.startsWith("data:")) {
+            imageUrl = `data:image/png;base64,${rawImage}`;
+          }
           if (imageUrl) {
             return NextResponse.json({ imageUrl });
           }

@@ -217,7 +217,7 @@ export default function BrandingPanel() {
       >
         CARD STYLE
       </p>
-      <div className="flex gap-1.5">
+      <div className="flex flex-wrap gap-1.5">
         {CARD_STYLES.map((style) => (
           <button
             key={style}
@@ -228,11 +228,15 @@ export default function BrandingPanel() {
               backgroundColor:
                 theme.cardStyle === style
                   ? "#a78bfa"
-                  : "rgba(39,39,42,1)",
+                  : "rgba(39,39,42,0.5)",
               color:
                 theme.cardStyle === style
                   ? "rgba(255,255,255,1)"
-                  : "rgba(161,161,170,1)",
+                  : "rgba(212,212,216,1)",
+              border:
+                theme.cardStyle === style
+                  ? "1px solid transparent"
+                  : "1px solid rgba(63,63,70,1)",
             }}
           >
             {style}

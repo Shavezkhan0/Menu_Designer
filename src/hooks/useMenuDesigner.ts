@@ -55,10 +55,42 @@ export interface BackgroundSettings {
   activeLayer: "top" | "middle" | "bottom" | "full";
 }
 
+export type CanvasPreset = "a4" | "a3" | "a5" | "a6" | "letter" | "custom";
+export type CanvasUnit = "px" | "mm" | "in";
+
+export interface CanvasSize {
+  preset: CanvasPreset;
+  width: number;
+  height: number;
+  unit: CanvasUnit;
+}
+
+const STANDARD_SIZES: Record<"a4" | "a3" | "a5" | "a6" | "letter", { width: number; height: number; unit: "mm" }> = {
+  a3: { width: 297, height: 420, unit: "mm" },
+  a4: { width: 210, height: 297, unit: "mm" },
+  a5: { width: 148, height: 210, unit: "mm" },
+  a6: { width: 105, height: 148, unit: "mm" },
+  letter: { width: 215.9, height: 279.4, unit: "mm" },
+};
+
+export function getCanvasPixelSize(size: CanvasSize): { width: number; height: number } {
+  const pxPerMm = 96 / 25.4;
+  if (size.unit === "px") return { width: size.width, height: size.height };
+  if (size.unit === "mm") return { width: Math.round(size.width * pxPerMm), height: Math.round(size.height * pxPerMm) };
+  return { width: Math.round(size.width * 96), height: Math.round(size.height * 96) };
+}
+
+export function getDefaultCanvasSize(preset: CanvasPreset): CanvasSize {
+  if (preset === "custom") return { preset, width: 800, height: 600, unit: "px" };
+  const s = STANDARD_SIZES[preset];
+  return { preset, ...s };
+}
+
 interface MenuDesignerState {
   selectedCategories: string[];
   activeLayout: LayoutStyle;
-  activeDevice: "desktop" | "tablet" | "mobile";
+  canvasSize: CanvasSize;
+  zoom: number;
   restaurantInfo: RestaurantInfo;
   theme: ThemeSettings;
   background: BackgroundSettings;
@@ -70,8 +102,8 @@ interface MenuDesignerState {
   selectedItemIds: string[];
   toggleCategory: (id: string) => void;
   setActiveLayout: (layout: LayoutStyle) => void;
-  setActiveDevice: (device: "desktop" | "tablet" | "mobile") => void;
-  setDevicePreview: (device: "desktop" | "tablet" | "mobile") => void;
+  setCanvasSize: (size: CanvasSize) => void;
+  setZoom: (zoom: number) => void;
   setRestaurantInfo: (info: Partial<RestaurantInfo>) => void;
   setTheme: (theme: Partial<ThemeSettings>) => void;
   setBackground: (partial: Partial<BackgroundLayer>) => void;
@@ -88,7 +120,8 @@ interface MenuDesignerState {
 export const useMenuDesigner = create<MenuDesignerState>((set) => ({
   selectedCategories: [],
   activeLayout: "smart-grid",
-  activeDevice: "desktop",
+  canvasSize: getDefaultCanvasSize("a4"),
+  zoom: 1,
   restaurantInfo: { name: "", tagline: "", logoUrl: null },
   theme: {
     primaryColor: "#a78bfa",
@@ -129,7 +162,8 @@ export const useMenuDesigner = create<MenuDesignerState>((set) => ({
         : [...state.selectedCategories, id],
     })),
   setActiveLayout: (layout) => set({ activeLayout: layout }),
-  setActiveDevice: (device) => set({ activeDevice: device }),
+  setCanvasSize: (size) => set({ canvasSize: size }),
+  setZoom: (zoom) => set({ zoom }),
   setRestaurantInfo: (info) =>
     set((state) => ({
       restaurantInfo: { ...state.restaurantInfo, ...info },
@@ -161,7 +195,6 @@ export const useMenuDesigner = create<MenuDesignerState>((set) => ({
     })),
   setSelectedItemId: (id) => set({ selectedItemId: id }),
   setActiveSidebarSection: (section) => set({ activeSidebarSection: section }),
-  setDevicePreview: (device) => set({ activeDevice: device }),
   setIsAIPanelOpen: (open) => set({ isAIPanelOpen: open }),
   setActiveBrowseCategory: (id) => set({ activeBrowseCategory: id }),
   toggleItem: (id) =>

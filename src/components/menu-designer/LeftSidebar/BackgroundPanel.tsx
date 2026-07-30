@@ -346,7 +346,13 @@ export default function BackgroundPanel() {
               step="1"
               value={activeLayerConfig.blur}
               onChange={(e) => setBackground({ blur: Number(e.target.value) })}
-              className="w-full"
+              className="w-full cursor-pointer"
+              style={{
+                accentColor: "#a78bfa",
+                height: 4,
+                borderRadius: 2,
+                background: `linear-gradient(to right, #a78bfa ${(activeLayerConfig.blur / 20) * 100}%, rgba(63,63,70,1) ${(activeLayerConfig.blur / 20) * 100}%)`,
+              }}
             />
           </div>
 
@@ -366,7 +372,13 @@ export default function BackgroundPanel() {
               step="0.1"
               value={activeLayerConfig.brightness}
               onChange={(e) => setBackground({ brightness: Number(e.target.value) })}
-              className="w-full"
+              className="w-full cursor-pointer"
+              style={{
+                accentColor: "#a78bfa",
+                height: 4,
+                borderRadius: 2,
+                background: `linear-gradient(to right, #a78bfa ${(activeLayerConfig.brightness / 2) * 100}%, rgba(63,63,70,1) ${(activeLayerConfig.brightness / 2) * 100}%)`,
+              }}
             />
           </div>
         </div>

@@ -5,11 +5,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import { exportAsPng, exportAsPdf, exportAsHtml } from "@/lib/export";
 import {
   ArrowLeft,
-  Monitor,
-  Tablet,
-  Smartphone,
   Download,
   Sparkles,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
 import LeftSidebar from "@/components/menu-designer/LeftSidebar/LeftSidebar";
 import MenuPreviewCanvas from "@/components/menu-designer/MenuPreview/MenuPreviewCanvas";
@@ -23,14 +22,8 @@ const FONT_LINKS: Record<string, string> = {
   "Great Vibes, cursive": "Great+Vibes:wght@400",
 };
 
-const DEVICES = [
-  { id: "desktop" as const, icon: Monitor, label: "Desktop", key: "1" },
-  { id: "tablet" as const, icon: Tablet, label: "Tablet", key: "2" },
-  { id: "mobile" as const, icon: Smartphone, label: "Mobile", key: "3" },
-];
-
 export default function MenuDesignerShell() {
-  const { activeDevice, setActiveDevice, theme, isAIPanelOpen, setIsAIPanelOpen } =
+  const { zoom, setZoom, theme, isAIPanelOpen, setIsAIPanelOpen } =
     useMenuDesigner();
   const [loaded, setLoaded] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
@@ -57,13 +50,11 @@ export default function MenuDesignerShell() {
     setExporting(false);
   };
 
-  // 0.8s splash screen
   useEffect(() => {
     const t = setTimeout(() => setLoaded(true), 800);
     return () => clearTimeout(t);
   }, []);
 
-  // Google Font injection
   useEffect(() => {
     const match = theme.fontFamily.match(/^['"]?([^,'"]+)/);
     const familyKey = match?.[1].trim();
@@ -84,19 +75,14 @@ export default function MenuDesignerShell() {
     document.head.appendChild(link);
   }, [theme.fontFamily]);
 
-  // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "1") setActiveDevice("desktop");
-      else if (e.key === "2") setActiveDevice("tablet");
-      else if (e.key === "3") setActiveDevice("mobile");
-      else if (e.key === "Escape") setIsAIPanelOpen(false);
+      if (e.key === "Escape") setIsAIPanelOpen(false);
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [setActiveDevice, setIsAIPanelOpen]);
+  }, [setIsAIPanelOpen]);
 
-  // Close export dropdown on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (exportRef.current && !exportRef.current.contains(e.target as Node)) {
@@ -109,9 +95,12 @@ export default function MenuDesignerShell() {
     }
   }, [exportOpen]);
 
+  const zoomIn = () => setZoom(Math.min(3, Math.round((zoom + 0.1) * 100) / 100));
+  const zoomOut = () => setZoom(Math.max(0.1, Math.round((zoom - 0.1) * 100) / 100));
+  const zoomReset = () => setZoom(1);
+
   return (
     <>
-      {/* Splash screen */}
       <AnimatePresence>
         {!loaded && (
           <motion.div
@@ -146,7 +135,6 @@ export default function MenuDesignerShell() {
         )}
       </AnimatePresence>
 
-      {/* Main UI */}
       <AnimatePresence mode="wait">
         {loaded && (
           <motion.div
@@ -164,7 +152,7 @@ export default function MenuDesignerShell() {
                 borderBottom: "1px solid rgba(255,255,255,0.06)",
               }}
             >
-              {/* Left — Back */}
+              {/* Left */}
               <button
                 type="button"
                 className="flex items-center gap-1.5 text-sm font-medium transition-colors"
@@ -180,50 +168,39 @@ export default function MenuDesignerShell() {
                 Menu Designer
               </button>
 
-              {/* Center — Device Preview Toggle */}
+              {/* Center — Zoom Controls */}
               <div
-                className="relative flex items-center rounded-full"
-                style={{ border: "1px solid rgba(63,63,70,1)", overflow: "hidden" }}
+                className="flex items-center gap-1 rounded-full"
+                style={{ border: "1px solid rgba(63,63,70,1)", padding: "2px" }}
               >
-                {DEVICES.map(({ id, icon: Icon, label, key }) => (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => setActiveDevice(id)}
-                    className="relative z-10 flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors"
-                    style={{
-                      color: activeDevice === id ? "#fff" : "rgba(113,113,122,1)",
-                    }}
-                  >
-                    {activeDevice === id && (
-                      <motion.span
-                        layoutId="device-indicator"
-                        className="absolute inset-0 rounded-full"
-                        style={{ backgroundColor: "rgba(63,63,70,1)" }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 400,
-                          damping: 30,
-                        }}
-                      />
-                    )}
-                    <span className="relative z-10 flex items-center gap-1.5">
-                      <Icon className="size-3.5" />
-                      <span>{label}</span>
-                      <span
-                        className="ml-0.5 text-[10px]"
-                        style={{ color: "rgba(82,82,91,1)" }}
-                      >
-                        {key}
-                      </span>
-                    </span>
-                  </button>
-                ))}
+                <button
+                  type="button"
+                  onClick={zoomOut}
+                  className="flex items-center justify-center rounded-full px-2 py-1 text-xs transition-colors hover:bg-white/5"
+                  style={{ color: "rgba(161,161,170,1)" }}
+                >
+                  <ZoomOut className="size-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={zoomReset}
+                  className="rounded-full px-3 py-1 text-xs font-medium tabular-nums transition-colors hover:bg-white/5"
+                  style={{ color: "rgba(212,212,216,1)" }}
+                >
+                  {Math.round(zoom * 100)}%
+                </button>
+                <button
+                  type="button"
+                  onClick={zoomIn}
+                  className="flex items-center justify-center rounded-full px-2 py-1 text-xs transition-colors hover:bg-white/5"
+                  style={{ color: "rgba(161,161,170,1)" }}
+                >
+                  <ZoomIn className="size-3.5" />
+                </button>
               </div>
 
               {/* Right */}
               <div className="flex items-center gap-2">
-                {/* Export */}
                 <div ref={exportRef} className="relative">
                   <button
                     type="button"
@@ -278,7 +255,7 @@ export default function MenuDesignerShell() {
                                 "transparent";
                             }}
                           >
-                            {exporting ? "Exporting…" : `Export as ${type.toUpperCase()}`}
+                            {exporting ? "Exporting\u2026" : `Export as ${type.toUpperCase()}`}
                           </button>
                         ))}
                       </motion.div>
@@ -286,7 +263,6 @@ export default function MenuDesignerShell() {
                   </AnimatePresence>
                 </div>
 
-                {/* AI */}
                 <button
                   type="button"
                   onClick={() => setIsAIPanelOpen(true)}
@@ -306,14 +282,9 @@ export default function MenuDesignerShell() {
               <LeftSidebar />
               <main
                 className="flex flex-1 flex-col overflow-hidden"
-                style={{ backgroundColor: "#111118" }}
+                style={{ backgroundColor: "#27272a" }}
               >
-                <div
-                  className="flex-1 overflow-hidden"
-                  style={{
-                    padding: activeDevice === "desktop" ? "0" : "16px",
-                  }}
-                >
+                <div className="flex-1 overflow-auto">
                   <MenuPreviewCanvas ref={canvasRef} />
                 </div>
               </main>

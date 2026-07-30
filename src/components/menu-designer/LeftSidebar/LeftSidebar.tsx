@@ -8,6 +8,7 @@ import {
   Palette,
   Image,
   Sparkles,
+  FileText,
   ChevronDown,
 } from "lucide-react";
 import { useMenuDesigner } from "@/hooks/useMenuDesigner";
@@ -16,6 +17,7 @@ import LayoutSelector from "./LayoutSelector";
 import BrandingPanel from "./BrandingPanel";
 import BackgroundPanel from "./BackgroundPanel";
 import AIAssistant from "./AIAssistant";
+import DocumentPanel from "./DocumentPanel";
 
 interface SectionDef {
   id: string;
@@ -25,6 +27,7 @@ interface SectionDef {
 }
 
 const SECTIONS: SectionDef[] = [
+  { id: "Document", label: "Document", icon: FileText, component: <DocumentPanel /> },
   { id: "Categories", label: "Categories", icon: LayoutGrid, component: <CategorySelector /> },
   { id: "Layout", label: "Layout", icon: Layers, component: <LayoutSelector /> },
   { id: "Branding", label: "Branding", icon: Palette, component: <BrandingPanel /> },
