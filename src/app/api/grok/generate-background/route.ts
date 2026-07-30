@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     const enhancedPrompt = `Premium restaurant background: ${prompt}. Dark, moody, atmospheric. High quality.`;
 
     // Try xAI image generation
-    if (process.env.XAI_API_KEY) {
+    if (process.env.XAI_API_KEY && process.env.XAI_API_KEY.startsWith("xai-")) {
       try {
         const res = await fetch("https://api.x.ai/v1/images/generations", {
           method: "POST",
@@ -37,42 +37,15 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ imageUrl });
           }
         }
-      } catch {
-        console.error("xAI image generation failed, falling back to text");
+      } catch (e) {
+        console.error("xAI image generation failed:", e);
       }
     }
 
-    // Fallback: generate a CSS gradient via text model
-    const client = process.env.XAI_API_KEY
-      ? new OpenAI({ baseURL: "https://api.x.ai/v1", apiKey: process.env.XAI_API_KEY })
-      : new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-    const model = process.env.XAI_API_KEY ? "grok-3-mini" : "gpt-4o-mini";
-
-    const completion = await client.chat.completions.create({
-      model,
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are a CSS gradient designer for restaurant menus. Based on the user's description, return ONLY a valid CSS gradient value (e.g. 'linear-gradient(135deg, #hex, #hex)'). No explanation, no markdown, just the gradient string.",
-        },
-        { role: "user", content: prompt },
-      ],
-      temperature: 0.5,
-      max_tokens: 100,
-    });
-
-    const gradient = completion.choices[0]?.message?.content?.trim() ?? "";
-
-    if (!gradient) {
-      return NextResponse.json(
-        { error: "Could not generate background" },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ gradient, imageUrl: null });
+    // Fallback: If no valid Grok API key or it failed, use Pollinations AI for free image generation
+    const fallbackImageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(enhancedPrompt)}?width=1080&height=1920&nologo=true`;
+    
+    return NextResponse.json({ imageUrl: fallbackImageUrl });
   } catch (error) {
     console.error("generate-background error:", error);
     return NextResponse.json(

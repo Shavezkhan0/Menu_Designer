@@ -31,6 +31,21 @@ export default function PremiumLayout({ items }: Props) {
           transition={{ duration: 0.35, delay: i * 0.04 }}
           className="mb-6"
         >
+          {item.image && theme.imageShape !== "none" && (
+            <div 
+              className="mb-4 overflow-hidden"
+              style={{
+                borderRadius: theme.imageShape === "circular" ? "50%" : theme.imageShape === "square" || theme.imageShape === "blend" ? "0px" : "8px",
+                mixBlendMode: theme.imageShape === "blend" ? "screen" : "normal",
+              }}
+            >
+              <img
+                src={item.image}
+                alt={item.name}
+                className={`w-full object-cover ${theme.imageShape === 'circular' ? 'aspect-square max-w-[200px] mx-auto' : 'h-48'}`}
+              />
+            </div>
+          )}
           <div className="mb-1 flex items-baseline justify-between gap-4">
             <h3
               className="text-base font-medium leading-tight"
@@ -48,7 +63,7 @@ export default function PremiumLayout({ items }: Props) {
                 color: theme.primaryColor,
               }}
             >
-              ${item.price.toFixed(2)}
+              Rs. {item.price.toFixed(2)}
             </span>
           </div>
 

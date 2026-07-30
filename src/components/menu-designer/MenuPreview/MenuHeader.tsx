@@ -10,11 +10,11 @@ export default function MenuHeader() {
     useMenuDesigner();
 
   const bgStyle =
-    background.type === "image" && background.value
-      ? { backgroundImage: `url(${background.value})`, backgroundSize: "cover", backgroundPosition: "center" }
-      : background.type === "gradient"
-        ? { backgroundImage: background.value }
-        : { backgroundColor: background.value };
+    background.top.type === "image" && background.top.value
+      ? { backgroundImage: `url(${background.top.value})`, backgroundSize: "cover", backgroundPosition: "center" }
+      : background.top.type === "gradient"
+        ? { backgroundImage: background.top.value }
+        : { backgroundColor: background.top.value };
 
   return (
     <motion.div
@@ -30,7 +30,7 @@ export default function MenuHeader() {
       <div
         className="absolute inset-0"
         style={{
-          filter: `blur(${background.blur}px) brightness(${background.brightness})`,
+          filter: `blur(${background.top.blur}px) brightness(${background.top.brightness})`,
           ...bgStyle,
         }}
       />

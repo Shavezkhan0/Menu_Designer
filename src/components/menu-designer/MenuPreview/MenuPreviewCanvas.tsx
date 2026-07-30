@@ -69,12 +69,19 @@ const MenuPreviewCanvas = forwardRef<HTMLDivElement>(function MenuPreviewCanvas(
   const wrapperWidth =
     activeDevice === "tablet" ? "768px" : activeDevice === "mobile" ? "390px" : "100%";
 
-  const bgStyle: React.CSSProperties =
-    background.type === "image" && background.value
-      ? { backgroundImage: `url(${background.value})`, backgroundSize: "cover", backgroundPosition: "center" }
-      : background.type === "gradient"
-        ? { backgroundImage: background.value }
-        : { backgroundColor: background.value };
+  const fullBgStyle: React.CSSProperties =
+    background.full.type === "image" && background.full.value
+      ? { backgroundImage: `url(${background.full.value})`, backgroundSize: "cover", backgroundPosition: "center" }
+      : background.full.type === "gradient"
+        ? { backgroundImage: background.full.value }
+        : { backgroundColor: background.full.value };
+
+  const middleBgStyle: React.CSSProperties =
+    background.middle.type === "image" && background.middle.value
+      ? { backgroundImage: `url(${background.middle.value})`, backgroundSize: "cover", backgroundPosition: "center" }
+      : background.middle.type === "gradient"
+        ? { backgroundImage: background.middle.value }
+        : { backgroundColor: background.middle.value };
 
   const LayoutComponent = LAYOUT_MAP[activeLayout];
 
@@ -147,7 +154,7 @@ const MenuPreviewCanvas = forwardRef<HTMLDivElement>(function MenuPreviewCanvas(
     <motion.div
       layout
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="mx-auto h-full overflow-hidden"
+      className="mx-auto h-full overflow-hidden relative"
       style={{
         maxWidth: wrapperWidth,
         borderRadius: isDesktop ? "0" : "12px",
@@ -157,19 +164,31 @@ const MenuPreviewCanvas = forwardRef<HTMLDivElement>(function MenuPreviewCanvas(
       }}
     >
       <div
-        className="relative h-full overflow-y-auto"
-        style={{ backgroundColor: theme.backgroundColor }}
+        className="relative h-full overflow-y-auto z-10"
       >
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{
-            filter: `blur(${background.blur}px) brightness(${background.brightness})`,
-            ...bgStyle,
-          }}
-        />
+        <div ref={ref} id="menu-preview-content" className="relative z-10 min-h-full" style={{ backgroundColor: theme.backgroundColor }}>
+          {/* Full Menu Background (Fixed) */}
+          <div
+            className="pointer-events-none absolute inset-0 z-0"
+            style={{
+              filter: `blur(${background.full.blur}px) brightness(${background.full.brightness})`,
+              ...fullBgStyle,
+              backgroundAttachment: "fixed", // Keeps it fixed relative to viewport
+            }}
+          />
 
-        <div ref={ref} id="menu-preview-content" className="relative z-10">
-          <MenuHeader />
+          {/* Middle Menu Background (Scrollable) */}
+          <div
+            className="pointer-events-none absolute inset-0 z-0"
+            style={{
+              filter: `blur(${background.middle.blur}px) brightness(${background.middle.brightness})`,
+              ...middleBgStyle,
+            }}
+          />
+
+          {/* Content Wrapper */}
+          <div className="relative z-10">
+            <MenuHeader />
           {!hasSelectedItems && (
             <MenuCategoryNav
               activeCategory={activeCategory}
@@ -177,19 +196,20 @@ const MenuPreviewCanvas = forwardRef<HTMLDivElement>(function MenuPreviewCanvas(
             />
           )}
 
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={hasSelectedItems ? `selected-${activeLayout}` : `${activeLayout}-${activeCategory}`}
-              initial={{ opacity: 0, scale: 0.99 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.99 }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
-            >
-              <LayoutComponent items={filteredItems} />
-            </motion.div>
-          </AnimatePresence>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={hasSelectedItems ? `selected-${activeLayout}` : `${activeLayout}-${activeCategory}`}
+                initial={{ opacity: 0, scale: 0.99 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.99 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+              >
+                <LayoutComponent items={filteredItems} />
+              </motion.div>
+            </AnimatePresence>
 
-          <MenuFooter />
+            <MenuFooter />
+          </div>
         </div>
       </div>
     </motion.div>

@@ -31,6 +31,28 @@ export default function FineDiningLayout({ items }: Props) {
           transition={{ duration: 0.4, delay: i * 0.08 }}
           className="mb-10"
         >
+          {item.image && theme.imageShape !== "none" && (
+            <div 
+              className="mx-auto mb-4 overflow-hidden" 
+              style={{ 
+                width: '120px', 
+                height: '120px',
+                borderRadius: theme.imageShape === "circular" ? "50%" : theme.imageShape === "square" || theme.imageShape === "blend" ? "0px" : "8px",
+                mixBlendMode: theme.imageShape === "blend" ? "screen" : "normal",
+                border: theme.imageShape === "circular" ? "1px solid rgba(201,168,76,0.2)" : "none",
+                padding: theme.imageShape === "circular" ? "4px" : "0px",
+              }}
+            >
+              <img
+                src={item.image}
+                alt={item.name}
+                className="h-full w-full object-cover"
+                style={{
+                  borderRadius: theme.imageShape === "circular" ? "50%" : theme.imageShape === "square" || theme.imageShape === "blend" ? "0px" : "8px",
+                }}
+              />
+            </div>
+          )}
           <h3
             className="mb-2 text-xl font-bold leading-snug"
             style={{
@@ -48,7 +70,7 @@ export default function FineDiningLayout({ items }: Props) {
               color: theme.primaryColor,
             }}
           >
-            ${item.price.toFixed(2)}
+            Rs. {item.price.toFixed(2)}
           </span>
 
           <p

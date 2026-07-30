@@ -79,8 +79,24 @@ export default function CocktailLayout({ items }: Props) {
                 }}
               />
 
-              <div className="relative z-10">
-                <div className="mb-1 flex items-start justify-between">
+              <div className="relative z-10 flex flex-col md:flex-row gap-6">
+                {item.image && theme.imageShape !== "none" && (
+                  <div 
+                    className="w-full md:w-1/3 shrink-0 overflow-hidden"
+                    style={{
+                      borderRadius: theme.imageShape === "circular" ? "50%" : theme.imageShape === "square" || theme.imageShape === "blend" ? "0px" : "8px",
+                      mixBlendMode: theme.imageShape === "blend" ? "screen" : "normal",
+                    }}
+                  >
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="aspect-square w-full object-cover"
+                    />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <div className="mb-1 flex items-start justify-between">
                   <h3
                     className="text-xl font-bold leading-tight"
                     style={{
@@ -97,7 +113,7 @@ export default function CocktailLayout({ items }: Props) {
                       color: theme.primaryColor,
                     }}
                   >
-                    ${item.price.toFixed(2)}
+                    Rs. {item.price.toFixed(2)}
                   </span>
                 </div>
 
@@ -135,14 +151,15 @@ export default function CocktailLayout({ items }: Props) {
                   )}
                 </div>
 
-                <div
-                  className="mt-4"
-                  style={{
-                    height: "1px",
-                    background: `linear-gradient(to right, transparent, ${theme.primaryColor}, transparent)`,
-                    opacity: 0.3,
-                  }}
-                />
+                  <div
+                    className="mt-4"
+                    style={{
+                      height: "1px",
+                      background: `linear-gradient(to right, transparent, ${theme.primaryColor}, transparent)`,
+                      opacity: 0.3,
+                    }}
+                  />
+                </div>
               </div>
             </motion.div>
           </div>

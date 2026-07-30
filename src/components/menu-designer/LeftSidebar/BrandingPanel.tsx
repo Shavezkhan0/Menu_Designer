@@ -19,6 +19,10 @@ export default function BrandingPanel() {
   const logoInputRef = useRef<HTMLInputElement>(null);
   const primaryColorRef = useRef<HTMLInputElement>(null);
   const accentColorRef = useRef<HTMLInputElement>(null);
+  const headingColorRef = useRef<HTMLInputElement>(null);
+  const subheadingColorRef = useRef<HTMLInputElement>(null);
+
+  const IMAGE_SHAPES = ["circular", "rectangle", "square", "none", "blend"] as const;
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -235,6 +239,78 @@ export default function BrandingPanel() {
           </button>
         ))}
       </div>
+
+      {/* Typography Colors */}
+      <p
+        className="mb-2 mt-4 text-[11px] font-medium tracking-[0.1em]"
+        style={{ color: "rgba(113,113,122,1)" }}
+      >
+        TYPOGRAPHY COLORS
+      </p>
+      <div className="mb-4 flex gap-3">
+        <div className="flex flex-col items-start gap-1.5">
+          <span className="text-xs" style={{ color: "rgba(113,113,122,1)" }}>
+            Heading
+          </span>
+          <button
+            type="button"
+            onClick={() => headingColorRef.current?.click()}
+            className="size-9 rounded-lg transition-transform hover:scale-110"
+            style={{ backgroundColor: theme.headingColor }}
+          />
+          <input
+            ref={headingColorRef}
+            type="color"
+            value={theme.headingColor}
+            onChange={(e) => setTheme({ headingColor: e.target.value })}
+            className="hidden"
+          />
+        </div>
+        <div className="flex flex-col items-start gap-1.5">
+          <span className="text-xs" style={{ color: "rgba(113,113,122,1)" }}>
+            Subheading
+          </span>
+          <button
+            type="button"
+            onClick={() => subheadingColorRef.current?.click()}
+            className="size-9 rounded-lg transition-transform hover:scale-110"
+            style={{ backgroundColor: theme.subheadingColor }}
+          />
+          <input
+            ref={subheadingColorRef}
+            type="color"
+            value={theme.subheadingColor}
+            onChange={(e) => setTheme({ subheadingColor: e.target.value })}
+            className="hidden"
+          />
+        </div>
+      </div>
+
+      {/* Image Style */}
+      <p
+        className="mb-2 text-[11px] font-medium tracking-[0.1em]"
+        style={{ color: "rgba(113,113,122,1)" }}
+      >
+        IMAGE STYLE
+      </p>
+      <select
+        value={theme.imageShape}
+        onChange={(e) => setTheme({ imageShape: e.target.value as typeof theme.imageShape })}
+        className="w-full rounded-lg px-3 py-2 text-sm outline-none transition-colors"
+        style={{
+          backgroundColor: "rgba(24,24,27,1)",
+          border: "1px solid rgba(63,63,70,1)",
+          color: "rgba(244,244,245,1)",
+        }}
+        onFocus={(e) => (e.target.style.borderColor = "#a78bfa")}
+        onBlur={(e) => (e.target.style.borderColor = "rgba(63,63,70,1)")}
+      >
+        {IMAGE_SHAPES.map((shape) => (
+          <option key={shape} value={shape} className="capitalize">
+            {shape.charAt(0).toUpperCase() + shape.slice(1)}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }

@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Upload, Sparkles, Loader2 } from "lucide-react";
-import { useMenuDesigner, type BackgroundType } from "@/hooks/useMenuDesigner";
+import { useMenuDesigner, type BackgroundType, type MenuBorderSettings } from "@/hooks/useMenuDesigner";
 
 const COLOR_PRESETS = [
   "#0d0d14",
@@ -30,9 +30,20 @@ const BG_TABS: { id: BackgroundType; label: string }[] = [
 ];
 
 export default function BackgroundPanel() {
-  const { background, setBackground } = useMenuDesigner();
+  const { background, setBackground, setActiveBackgroundLayer, menuBorder, setMenuBorder } = useMenuDesigner();
+  const activeLayerConfig = background[background.activeLayer];
   const colorInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const borderColorRef = useRef<HTMLInputElement>(null);
+
+  const BORDER_STYLES: { value: MenuBorderSettings["style"]; label: string }[] = [
+    { value: "none", label: "None" },
+    { value: "solid", label: "Solid" },
+    { value: "double", label: "Double" },
+    { value: "dashed", label: "Dashed" },
+    { value: "dotted", label: "Dotted" },
+    { value: "gold-frame", label: "Gold Frame" },
+  ];
   const [aiOpen, setAiOpen] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
@@ -66,7 +77,50 @@ export default function BackgroundPanel() {
 
   return (
     <div className="px-4 py-5">
+      {/* Target Layer Selector */}
+      <p
+        className="mb-2 text-[11px] font-medium tracking-[0.1em]"
+        style={{ color: "rgba(113,113,122,1)" }}
+      >
+        TARGET LAYER
+      </p>
+      <div className="relative mb-6 flex gap-0.5 rounded-lg p-0.5" style={{ backgroundColor: "rgba(24,24,27,1)" }}>
+        {["top", "middle", "bottom", "full"].map((layer) => (
+          <button
+            key={layer}
+            type="button"
+            onClick={() => setActiveBackgroundLayer(layer as any)}
+            className="relative z-10 flex-1 rounded-md px-2 py-1.5 text-[10px] font-medium transition-colors uppercase"
+            style={{
+              color: background.activeLayer === layer ? "rgba(244,244,245,1)" : "rgba(113,113,122,1)",
+            }}
+          >
+            {background.activeLayer === layer && (
+              <motion.div
+                layoutId="bg-layer-indicator"
+                className="absolute inset-0 rounded-md"
+                style={{ backgroundColor: "rgba(39,39,42,1)" }}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              />
+            )}
+            <span className="relative z-10">{layer}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Separator */}
+      <div
+        className="my-4"
+        style={{ height: "1px", backgroundColor: "rgba(255,255,255,0.04)" }}
+      />
+
       {/* Background Type Tabs */}
+      <p
+        className="mb-2 text-[11px] font-medium tracking-[0.1em]"
+        style={{ color: "rgba(113,113,122,1)" }}
+      >
+        BACKGROUND TYPE
+      </p>
       <div className="relative mb-4 flex gap-0.5 rounded-lg p-0.5" style={{ backgroundColor: "rgba(24,24,27,1)" }}>
         {BG_TABS.map((tab) => (
           <button
@@ -75,10 +129,10 @@ export default function BackgroundPanel() {
             onClick={() => setBackground({ type: tab.id })}
             className="relative z-10 flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors"
             style={{
-              color: background.type === tab.id ? "rgba(244,244,245,1)" : "rgba(113,113,122,1)",
+              color: activeLayerConfig.type === tab.id ? "rgba(244,244,245,1)" : "rgba(113,113,122,1)",
             }}
           >
-            {background.type === tab.id && (
+            {activeLayerConfig.type === tab.id && (
               <motion.div
                 layoutId="bg-tab-indicator"
                 className="absolute inset-0 rounded-md"
@@ -92,25 +146,25 @@ export default function BackgroundPanel() {
       </div>
 
       {/* Color Mode */}
-      {background.type === "color" && (
+      {activeLayerConfig.type === "color" && (
         <>
           <div className="mb-3 flex items-center gap-2">
             <button
               type="button"
               onClick={() => colorInputRef.current?.click()}
               className="size-9 shrink-0 rounded-lg transition-transform hover:scale-110"
-              style={{ backgroundColor: background.value }}
+              style={{ backgroundColor: activeLayerConfig.value }}
             />
             <input
               ref={colorInputRef}
               type="color"
-              value={background.value}
+              value={activeLayerConfig.value}
               onChange={(e) => setBackground({ value: e.target.value })}
               className="hidden"
             />
             <input
               type="text"
-              value={background.value}
+              value={activeLayerConfig.value}
               onChange={(e) => setBackground({ value: e.target.value })}
               className="w-full rounded-lg px-3 py-2 text-xs font-mono outline-none"
               style={{
@@ -123,15 +177,15 @@ export default function BackgroundPanel() {
             />
           </div>
           <div className="flex gap-2">
-            {COLOR_PRESETS.map((hex) => (
+            {COLOR_PRESETS.map((preset) => (
               <button
-                key={hex}
+                key={preset}
                 type="button"
-                onClick={() => setBackground({ type: "color", value: hex })}
+                onClick={() => setBackground({ type: "color", value: preset })}
                 className="size-7 rounded-lg transition-transform hover:scale-110"
                 style={{
-                  backgroundColor: hex,
-                  outline: background.value === hex ? "2px solid #a78bfa" : "1px solid rgba(63,63,70,1)",
+                  backgroundColor: preset,
+                  boxShadow: activeLayerConfig.value === preset ? "0 0 0 2px rgba(24,24,27,1), 0 0 0 4px rgba(63,63,70,1)" : "none",
                   outlineOffset: 2,
                 }}
               />
@@ -141,7 +195,7 @@ export default function BackgroundPanel() {
       )}
 
       {/* Gradient Mode */}
-      {background.type === "gradient" && (
+      {activeLayerConfig.type === "gradient" && (
         <div className="flex flex-wrap gap-2">
           {GRADIENT_PRESETS.map((g) => (
             <button
@@ -151,11 +205,11 @@ export default function BackgroundPanel() {
               className="flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium transition-all"
               style={{
                 background: g.value,
-                border: background.value === g.value
+                border: activeLayerConfig.value === g.value
                   ? "1.5px solid #a78bfa"
                   : "1.5px solid rgba(255,255,255,0.06)",
                 color: "rgba(244,244,245,0.9)",
-                outline: background.value === g.value ? "2px solid rgba(167,139,250,0.3)" : "none",
+                outline: activeLayerConfig.value === g.value ? "2px solid rgba(167,139,250,0.3)" : "none",
                 outlineOffset: -1,
               }}
             >
@@ -166,7 +220,7 @@ export default function BackgroundPanel() {
       )}
 
       {/* Image Mode */}
-      {background.type === "image" && (
+      {activeLayerConfig.type === "image" && (
         <>
           <input
             ref={imageInputRef}
@@ -175,10 +229,10 @@ export default function BackgroundPanel() {
             className="hidden"
             onChange={handleImageUpload}
           />
-          {background.value ? (
+          {activeLayerConfig.value ? (
             <div className="relative mb-3">
               <img
-                src={background.value}
+                src={activeLayerConfig.value}
                 alt="Background preview"
                 className="h-20 w-full rounded-xl object-cover"
               />
@@ -266,72 +320,165 @@ export default function BackgroundPanel() {
         </>
       )}
 
+      {/* Adjustments */}
+      {(activeLayerConfig.type === "image" || activeLayerConfig.type === "gradient" || activeLayerConfig.type === "color") && (
+        <div className="mt-8 space-y-6">
+          <p
+            className="mb-2 text-[11px] font-medium tracking-[0.1em]"
+            style={{ color: "rgba(113,113,122,1)" }}
+          >
+            ADJUSTMENTS
+          </p>
+
+          <div>
+            <div className="mb-2 flex items-center justify-between">
+              <label className="text-xs font-medium" style={{ color: "rgba(161,161,170,1)" }}>
+                Blur
+              </label>
+              <span className="text-xs" style={{ color: "rgba(113,113,122,1)" }}>
+                {activeLayerConfig.blur}px
+              </span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="20"
+              step="1"
+              value={activeLayerConfig.blur}
+              onChange={(e) => setBackground({ blur: Number(e.target.value) })}
+              className="w-full"
+            />
+          </div>
+
+          <div>
+            <div className="mb-2 flex items-center justify-between">
+              <label className="text-xs font-medium" style={{ color: "rgba(161,161,170,1)" }}>
+                Brightness
+              </label>
+              <span className="text-xs" style={{ color: "rgba(113,113,122,1)" }}>
+                {Math.round(activeLayerConfig.brightness * 100)}%
+              </span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="2"
+              step="0.1"
+              value={activeLayerConfig.brightness}
+              onChange={(e) => setBackground({ brightness: Number(e.target.value) })}
+              className="w-full"
+            />
+          </div>
+        </div>
+      )}
+
       {/* Separator */}
       <div
         className="my-4"
         style={{ height: "1px", backgroundColor: "rgba(255,255,255,0.04)" }}
       />
 
-      {/* Blur Slider */}
+      {/* ── Menu Border ── */}
       <p
-        className="mb-2 text-[11px] font-medium tracking-[0.1em]"
+        className="mb-3 text-[11px] font-medium tracking-[0.1em]"
         style={{ color: "rgba(113,113,122,1)" }}
       >
-        BLUR
+        MENU BORDER
       </p>
-      <div className="mb-4 flex items-center gap-3">
-        <input
-          type="range"
-          min={0}
-          max={20}
-          value={background.blur}
-          onChange={(e) => setBackground({ blur: Number(e.target.value) })}
-          className="flex-1 cursor-pointer"
-          style={{
-            accentColor: "#a78bfa",
-            height: 4,
-            borderRadius: 2,
-            background: `linear-gradient(to right, #a78bfa ${(background.blur / 20) * 100}%, rgba(63,63,70,1) ${(background.blur / 20) * 100}%)`,
-          }}
+
+      {/* Style */}
+      <p className="mb-1.5 text-xs" style={{ color: "rgba(113,113,122,1)" }}>
+        Style
+      </p>
+      <select
+        value={menuBorder.style}
+        onChange={(e) => setMenuBorder({ style: e.target.value as MenuBorderSettings["style"] })}
+        className="mb-3 w-full rounded-lg px-3 py-2 text-xs outline-none transition-colors"
+        style={{
+          backgroundColor: "rgba(24,24,27,1)",
+          border: "1px solid rgba(63,63,70,1)",
+          color: "rgba(244,244,245,1)",
+        }}
+        onFocus={(e) => (e.target.style.borderColor = "#a78bfa")}
+        onBlur={(e) => (e.target.style.borderColor = "rgba(63,63,70,1)")}
+      >
+        {BORDER_STYLES.map((s) => (
+          <option key={s.value} value={s.value}>
+            {s.label}
+          </option>
+        ))}
+      </select>
+
+      {/* Color */}
+      <p className="mb-1.5 text-xs" style={{ color: "rgba(113,113,122,1)" }}>
+        Color
+      </p>
+      <div className="mb-3 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => borderColorRef.current?.click()}
+          className="size-9 shrink-0 rounded-lg transition-transform hover:scale-110"
+          style={{ backgroundColor: menuBorder.color }}
         />
-        <span
-          className="w-8 text-right text-xs font-mono"
-          style={{ color: "rgba(161,161,170,1)" }}
-        >
-          {background.blur}
-        </span>
+        <input
+          ref={borderColorRef}
+          type="color"
+          value={menuBorder.color}
+          onChange={(e) => setMenuBorder({ color: e.target.value })}
+          className="hidden"
+        />
+        <input
+          type="text"
+          value={menuBorder.color}
+          onChange={(e) => setMenuBorder({ color: e.target.value })}
+          className="flex-1 rounded-lg px-3 py-2 text-xs font-mono outline-none"
+          style={{
+            backgroundColor: "rgba(24,24,27,1)",
+            border: "1px solid rgba(63,63,70,1)",
+            color: "rgba(244,244,245,1)",
+          }}
+          onFocus={(e) => (e.target.style.borderColor = "#a78bfa")}
+          onBlur={(e) => (e.target.style.borderColor = "rgba(63,63,70,1)")}
+        />
       </div>
 
-      {/* Brightness Slider */}
-      <p
-        className="mb-2 text-[11px] font-medium tracking-[0.1em]"
-        style={{ color: "rgba(113,113,122,1)" }}
-      >
-        BRIGHTNESS
-      </p>
-      <div className="flex items-center gap-3">
-        <input
-          type="range"
-          min={0.5}
-          max={1.5}
-          step={0.1}
-          value={background.brightness}
-          onChange={(e) => setBackground({ brightness: Number(e.target.value) })}
-          className="flex-1 cursor-pointer"
-          style={{
-            accentColor: "#a78bfa",
-            height: 4,
-            borderRadius: 2,
-            background: `linear-gradient(to right, #a78bfa ${((background.brightness - 0.5) / 1) * 100}%, rgba(63,63,70,1) ${((background.brightness - 0.5) / 1) * 100}%)`,
-          }}
-        />
-        <span
-          className="w-8 text-right text-xs font-mono"
-          style={{ color: "rgba(161,161,170,1)" }}
-        >
-          {background.brightness.toFixed(1)}
-        </span>
-      </div>
+      {/* Sliders */}
+      {[
+        { label: "Size", key: "size" as const, min: 0, max: 20, step: 1 },
+        { label: "Offset X", key: "offsetX" as const, min: -100, max: 100, step: 1 },
+        { label: "Offset Y", key: "offsetY" as const, min: -100, max: 100, step: 1 },
+        { label: "Padding X", key: "paddingX" as const, min: 0, max: 100, step: 1 },
+        { label: "Padding Y", key: "paddingY" as const, min: 0, max: 100, step: 1 },
+      ].map(({ label, key, min, max, step }) => (
+        <div key={key} className="mb-3">
+          <div className="mb-1.5 flex items-center justify-between">
+            <span className="text-xs" style={{ color: "rgba(113,113,122,1)" }}>
+              {label}
+            </span>
+            <span
+              className="text-xs font-mono"
+              style={{ color: "rgba(161,161,170,1)" }}
+            >
+              {menuBorder[key]}
+            </span>
+          </div>
+          <input
+            type="range"
+            min={min}
+            max={max}
+            step={step}
+            value={menuBorder[key]}
+            onChange={(e) => setMenuBorder({ [key]: Number(e.target.value) })}
+            className="w-full cursor-pointer"
+            style={{
+              accentColor: "#a78bfa",
+              height: 4,
+              borderRadius: 2,
+              background: `linear-gradient(to right, #a78bfa ${((menuBorder[key] - min) / (max - min)) * 100}%, rgba(63,63,70,1) ${((menuBorder[key] - min) / (max - min)) * 100}%)`,
+            }}
+          />
+        </div>
+      ))}
     </div>
   );
 }

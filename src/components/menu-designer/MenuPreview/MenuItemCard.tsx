@@ -59,6 +59,23 @@ export default function MenuItemCard({ item, index, onSelect }: Props) {
         backdropFilter: theme.cardStyle === "glass" ? "blur(12px)" : "none",
       }}
     >
+      {/* Image */}
+      {item.image && theme.imageShape !== "none" && (
+        <div 
+          className="mb-3 overflow-hidden"
+          style={{
+            borderRadius: theme.imageShape === "circular" ? "50%" : theme.imageShape === "square" || theme.imageShape === "blend" ? "0px" : "8px",
+            mixBlendMode: theme.imageShape === "blend" ? "screen" : "normal",
+          }}
+        >
+          <img
+            src={item.image}
+            alt={item.name}
+            className={`w-full object-cover transition-transform duration-500 group-hover:scale-105 ${theme.imageShape === 'circular' ? 'aspect-square' : 'h-40'}`}
+          />
+        </div>
+      )}
+
       {/* Top row: Name + Price */}
       <div className="mb-1.5 flex items-start justify-between gap-3">
         <h3
@@ -77,7 +94,7 @@ export default function MenuItemCard({ item, index, onSelect }: Props) {
             color: theme.primaryColor,
           }}
         >
-          ${item.price.toFixed(2)}
+          Rs. {item.price.toFixed(2)}
         </span>
       </div>
 

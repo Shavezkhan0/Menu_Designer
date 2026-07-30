@@ -23,15 +23,36 @@ export interface ThemeSettings {
   cardStyle: "glass" | "solid" | "minimal" | "bordered";
   textColor: string;
   backgroundColor: string;
+  headingColor: string;
+  subheadingColor: string;
+  imageShape: "circular" | "rectangle" | "square" | "none" | "blend";
+}
+
+export interface MenuBorderSettings {
+  style: "none" | "solid" | "double" | "dashed" | "dotted" | "gold-frame";
+  color: string;
+  size: number;
+  offsetX: number;
+  offsetY: number;
+  paddingX: number;
+  paddingY: number;
 }
 
 export type BackgroundType = "color" | "gradient" | "image";
 
-export interface BackgroundSettings {
+export interface BackgroundLayer {
   type: BackgroundType;
   value: string;
   blur: number;
   brightness: number;
+}
+
+export interface BackgroundSettings {
+  top: BackgroundLayer;
+  middle: BackgroundLayer;
+  bottom: BackgroundLayer;
+  full: BackgroundLayer;
+  activeLayer: "top" | "middle" | "bottom" | "full";
 }
 
 interface MenuDesignerState {
@@ -41,6 +62,7 @@ interface MenuDesignerState {
   restaurantInfo: RestaurantInfo;
   theme: ThemeSettings;
   background: BackgroundSettings;
+  menuBorder: MenuBorderSettings;
   selectedItemId: string | null;
   activeSidebarSection: string | null;
   isAIPanelOpen: boolean;
@@ -52,7 +74,9 @@ interface MenuDesignerState {
   setDevicePreview: (device: "desktop" | "tablet" | "mobile") => void;
   setRestaurantInfo: (info: Partial<RestaurantInfo>) => void;
   setTheme: (theme: Partial<ThemeSettings>) => void;
-  setBackground: (bg: Partial<BackgroundSettings>) => void;
+  setBackground: (partial: Partial<BackgroundLayer>) => void;
+  setActiveBackgroundLayer: (layer: "top" | "middle" | "bottom" | "full") => void;
+  setMenuBorder: (border: Partial<MenuBorderSettings>) => void;
   setSelectedItemId: (id: string | null) => void;
   setActiveSidebarSection: (section: string | null) => void;
   setIsAIPanelOpen: (open: boolean) => void;
@@ -73,12 +97,25 @@ export const useMenuDesigner = create<MenuDesignerState>((set) => ({
     cardStyle: "glass",
     textColor: "#f4f4f5",
     backgroundColor: "#111118",
+    headingColor: "#ffffff",
+    subheadingColor: "rgba(200,190,170,0.8)",
+    imageShape: "circular",
   },
   background: {
-    type: "color",
-    value: "#0d0d14",
-    blur: 0,
-    brightness: 1,
+    top: { type: "color", value: "#0d0d14", blur: 0, brightness: 1 },
+    middle: { type: "color", value: "transparent", blur: 0, brightness: 1 },
+    bottom: { type: "color", value: "transparent", blur: 0, brightness: 1 },
+    full: { type: "color", value: "transparent", blur: 0, brightness: 1 },
+    activeLayer: "top",
+  },
+  menuBorder: {
+    style: "none",
+    color: "#c9a84c",
+    size: 2,
+    offsetX: 0,
+    offsetY: 0,
+    paddingX: 20,
+    paddingY: 32,
   },
   selectedItemId: null,
   activeSidebarSection: "Categories",
@@ -102,8 +139,25 @@ export const useMenuDesigner = create<MenuDesignerState>((set) => ({
       theme: { ...state.theme, ...partial },
     })),
   setBackground: (partial) =>
+    set((state) => {
+      const activeLayer = state.background.activeLayer;
+      return {
+        background: {
+          ...state.background,
+          [activeLayer]: {
+            ...state.background[activeLayer],
+            ...partial,
+          },
+        },
+      };
+    }),
+  setActiveBackgroundLayer: (layer) =>
     set((state) => ({
-      background: { ...state.background, ...partial },
+      background: { ...state.background, activeLayer: layer },
+    })),
+  setMenuBorder: (partial) =>
+    set((state) => ({
+      menuBorder: { ...state.menuBorder, ...partial },
     })),
   setSelectedItemId: (id) => set({ selectedItemId: id }),
   setActiveSidebarSection: (section) => set({ activeSidebarSection: section }),

@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import type { MenuItem } from "@/data/menuData";
 import { MENU_CATEGORIES } from "@/data/menuData";
 import { useMenuDesigner } from "@/hooks/useMenuDesigner";
-import type { ThemeSettings } from "@/hooks/useMenuDesigner";
+import type { ThemeSettings, MenuBorderSettings, BackgroundSettings } from "@/hooks/useMenuDesigner";
 
 interface Props {
   items: MenuItem[];
@@ -38,8 +38,38 @@ function chunkItems(items: MenuItem[]): (MenuItem | MenuItem[])[] {
   return groups;
 }
 
+function getBorderStyle(border: MenuBorderSettings) {
+  if (border.style === "none") return {};
+  if (border.style === "gold-frame") {
+    return {
+      border: `2px solid ${border.color}`,
+      borderRadius: "4px",
+      boxShadow: `inset 0 0 40px ${border.color}14, 0 0 0 1px ${border.color}33`,
+    };
+  }
+  return {
+    border: `${border.size}px ${border.style} ${border.color}`,
+    borderRadius: "4px",
+  };
+}
+
+function getImageStyle(shape: ThemeSettings["imageShape"]) {
+  switch (shape) {
+    case "circular":
+      return { borderRadius: "50%", objectFit: "cover" as const };
+    case "rectangle":
+      return { borderRadius: "8px", objectFit: "cover" as const };
+    case "square":
+      return { borderRadius: "0px", objectFit: "cover" as const };
+    case "blend":
+      return { borderRadius: "0px", objectFit: "cover" as const, mixBlendMode: "screen" as const };
+    case "none":
+      return null;
+  }
+}
+
 export default function SmartGridLayout({ items }: Props) {
-  const { theme, setSelectedItemId } = useMenuDesigner();
+  const { theme, menuBorder, background, setSelectedItemId } = useMenuDesigner();
   const groups = chunkItems(items);
 
   if (items.length === 0) return <></>;
@@ -49,21 +79,26 @@ export default function SmartGridLayout({ items }: Props) {
     MENU_CATEGORIES.find((c) => c.id === categoryId)?.label?.toUpperCase() ??
     categoryId.toUpperCase();
 
+  const borderInline = getBorderStyle(menuBorder);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
       className="relative px-6 py-8"
-      style={{ backgroundColor: theme.backgroundColor }}
+      style={{
+        backgroundColor: (
+          (background.full.type !== "color" || background.full.value !== "transparent") ||
+          (background.middle.type !== "color" || background.middle.value !== "transparent")
+        ) ? "transparent" : theme.backgroundColor,
+      }}
     >
-      {/* Gold border frame */}
       <div
         style={{
-          border: `2px solid ${GOLD}`,
-          borderRadius: "4px",
-          padding: "32px 20px",
-          boxShadow: `inset 0 0 40px ${GOLD}14, 0 0 0 1px ${GOLD}33`,
+          transform: `translate(${menuBorder.offsetX}px, ${menuBorder.offsetY}px)`,
+          padding: `${menuBorder.paddingY}px ${menuBorder.paddingX}px`,
+          ...borderInline,
         }}
       >
         {/* Category title */}
@@ -72,7 +107,7 @@ export default function SmartGridLayout({ items }: Props) {
             className="text-center text-lg font-bold tracking-[0.15em]"
             style={{
               fontFamily: theme.fontFamily,
-              color: "#fff",
+              color: theme.headingColor,
             }}
           >
             {categoryLabel}
@@ -103,6 +138,7 @@ export default function SmartGridLayout({ items }: Props) {
                       item={item}
                       index={idx}
                       theme={theme}
+                      imageShape={theme.imageShape}
                       onSelect={() => setSelectedItemId(item.id)}
                     />
                   ))}
@@ -117,6 +153,7 @@ export default function SmartGridLayout({ items }: Props) {
                     item={group}
                     index={0}
                     theme={theme}
+                    imageShape={theme.imageShape}
                     onSelect={() => setSelectedItemId(group.id)}
                   />
                 </div>
@@ -133,14 +170,18 @@ function SmartCard({
   item,
   index,
   theme,
+  imageShape,
   onSelect,
 }: {
   item: MenuItem;
   index: number;
   theme: ThemeSettings;
+  imageShape: ThemeSettings["imageShape"];
   onSelect: () => void;
 }) {
   const emoji = CATEGORY_EMOJI[item.category] ?? "🍸";
+  const imgStyle = imageShape !== "none" ? getImageStyle(imageShape) : null;
+  const showImage = imageShape !== "none";
 
   return (
     <motion.button
@@ -151,8 +192,8 @@ function SmartCard({
       onClick={onSelect}
       className="flex w-full flex-col items-center text-center"
     >
-      {/* Image circle */}
-      {item.image ? (
+      {/* Image or emoji */}
+      {showImage && item.image && imgStyle ? (
         <img
           src={item.image}
           alt={item.name}
@@ -160,18 +201,17 @@ function SmartCard({
           style={{
             width: "140px",
             height: "140px",
-            borderRadius: "50%",
-            objectFit: "cover",
             filter: "drop-shadow(0 8px 24px rgba(0,0,0,0.6))",
+            ...imgStyle,
           }}
         />
-      ) : (
+      ) : showImage && !item.image ? (
         <div
           className="mb-3 flex items-center justify-center"
           style={{
             width: "140px",
             height: "140px",
-            borderRadius: "50%",
+            borderRadius: imgStyle?.borderRadius ?? "50%",
             backgroundColor: "rgba(255,255,255,0.04)",
             fontSize: "48px",
             lineHeight: 1,
@@ -179,14 +219,14 @@ function SmartCard({
         >
           {emoji}
         </div>
-      )}
+      ) : null}
 
       {/* Name */}
       <h3
         className="text-sm font-bold leading-tight"
         style={{
           fontFamily: theme.fontFamily,
-          color: "#fff",
+          color: theme.headingColor,
           letterSpacing: "0.08em",
           textTransform: "uppercase",
         }}
@@ -198,7 +238,7 @@ function SmartCard({
       <p
         className="mt-1.5 line-clamp-3 text-[11px] leading-relaxed"
         style={{
-          color: "rgba(200,190,170,0.8)",
+          color: theme.subheadingColor,
           maxWidth: "200px",
         }}
       >

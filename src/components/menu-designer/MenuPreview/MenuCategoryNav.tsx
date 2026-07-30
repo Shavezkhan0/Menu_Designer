@@ -10,7 +10,7 @@ interface Props {
 }
 
 export default function MenuCategoryNav({ activeCategory, onCategoryChange }: Props) {
-  const { selectedCategories, theme } = useMenuDesigner();
+  const { selectedCategories, theme, background } = useMenuDesigner();
 
   const categories = selectedCategories.length > 0
     ? MENU_CATEGORIES.filter((c) => selectedCategories.includes(c.id))
@@ -20,7 +20,10 @@ export default function MenuCategoryNav({ activeCategory, onCategoryChange }: Pr
     <div
       className="sticky top-0 z-20 overflow-x-auto"
       style={{
-        backgroundColor: theme.backgroundColor,
+        backgroundColor: (
+          (background.full.type !== "color" || background.full.value !== "transparent") ||
+          (background.middle.type !== "color" || background.middle.value !== "transparent")
+        ) ? "transparent" : theme.backgroundColor,
         backdropFilter: "blur(8px)",
         scrollbarWidth: "none",
       }}

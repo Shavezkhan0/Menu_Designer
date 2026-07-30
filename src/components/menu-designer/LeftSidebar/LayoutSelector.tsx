@@ -115,6 +115,18 @@ const LAYOUTS: LayoutOption[] = [
       </svg>
     ),
   },
+  {
+    id: "smart-grid",
+    label: "Smart Grid",
+    thumbnail: (
+      <svg viewBox="0 0 60 60" className="h-full w-full" fill="none">
+        <rect x={15} y={8} width={30} height={44} rx={2} stroke="currentColor" strokeWidth={1} fill="none" opacity={0.5} />
+        <circle cx={30} cy={20} r={6} fill="currentColor" opacity={0.6} />
+        <rect x={20} y={32} width={20} height={3} rx={1.5} fill="currentColor" opacity={0.7} />
+        <rect x={18} y={38} width={24} height={2} rx={1} fill="currentColor" opacity={0.4} />
+      </svg>
+    ),
+  },
 ];
 
 export default function LayoutSelector() {

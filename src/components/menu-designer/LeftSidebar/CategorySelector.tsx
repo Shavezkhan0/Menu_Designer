@@ -167,16 +167,24 @@ export default function CategorySelector() {
                       }
                     }}
                   >
-                    {/* Emoji circle */}
-                    <div
-                      className="flex size-10 shrink-0 items-center justify-center rounded-full text-base"
-                      style={{
-                        background:
-                          "linear-gradient(135deg, rgba(167,139,250,0.12), rgba(167,139,250,0.04))",
-                      }}
-                    >
-                      {getCategoryEmoji(activeBrowseCategory)}
-                    </div>
+                    {/* Image or Emoji circle */}
+                    {item.image ? (
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="size-10 shrink-0 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div
+                        className="flex size-10 shrink-0 items-center justify-center rounded-full text-base"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, rgba(167,139,250,0.12), rgba(167,139,250,0.04))",
+                        }}
+                      >
+                        {getCategoryEmoji(activeBrowseCategory)}
+                      </div>
+                    )}
 
                     {/* Name + price + description */}
                     <div className="min-w-0 flex-1">
@@ -191,7 +199,7 @@ export default function CategorySelector() {
                           className="shrink-0 text-[11px] font-semibold"
                           style={{ color: "#a78bfa" }}
                         >
-                          ${item.price.toFixed(2)}
+                          Rs. {item.price.toFixed(2)}
                         </span>
                       </div>
                       <p

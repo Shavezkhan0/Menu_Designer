@@ -5,16 +5,39 @@ import { Phone, Mail, MapPin, Globe, QrCode } from "lucide-react";
 import { useMenuDesigner } from "@/hooks/useMenuDesigner";
 
 export default function MenuFooter() {
-  const { restaurantInfo, theme } = useMenuDesigner();
+  const { restaurantInfo, theme, background } = useMenuDesigner();
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut", delay: 0.2 }}
-      className="px-6 py-10 text-center"
-      style={{ backgroundColor: theme.backgroundColor }}
+      className="relative px-6 py-10 text-center overflow-hidden"
+      style={{ backgroundColor: background.bottom.type === "color" && background.bottom.value === "transparent" ? "transparent" : theme.backgroundColor }}
     >
+      {/* Background layer with blur & brightness */}
+      <div
+        className="absolute inset-0"
+        style={{
+          filter: `blur(${background.bottom.blur}px) brightness(${background.bottom.brightness})`,
+          ...(background.bottom.type === "image" && background.bottom.value
+            ? { backgroundImage: `url(${background.bottom.value})`, backgroundSize: "cover", backgroundPosition: "center" }
+            : background.bottom.type === "gradient"
+              ? { backgroundImage: background.bottom.value }
+              : { backgroundColor: background.bottom.value }),
+        }}
+      />
+
+      {/* Gradient overlay to blend with main background */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `linear-gradient(to top, transparent, ${theme.backgroundColor})`,
+        }}
+      />
+
+      {/* Content wrapper */}
+      <div className="relative z-10">
       {/* Decorative divider */}
       <div
         className="mx-auto mb-8"
@@ -104,6 +127,7 @@ export default function MenuFooter() {
         }}
       >
         Generated with Menu Designer
+      </div>
       </div>
     </motion.div>
   );
