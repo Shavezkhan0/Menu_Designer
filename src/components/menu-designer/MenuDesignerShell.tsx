@@ -40,14 +40,18 @@ export default function MenuDesignerShell() {
 
   const handleExport = async (type: "png" | "pdf" | "html") => {
     const el = canvasRef.current;
-    if (!el) return;
+    if (!el) {
+      console.warn("Export target element not found");
+      return;
+    }
     setExporting(true);
     try {
       if (type === "png") await exportAsPng(el);
       else if (type === "pdf") await exportAsPdf(el);
       else exportAsHtml(el);
-    } catch {
-      // silently fail
+    } catch (err) {
+      console.error("Export failed:", err);
+      alert("Export failed. Check the console for details.");
     }
     setExportOpen(false);
     setExporting(false);

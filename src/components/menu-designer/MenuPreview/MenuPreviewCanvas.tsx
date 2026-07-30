@@ -145,7 +145,6 @@ const MenuPreviewCanvas = forwardRef<HTMLDivElement>(function MenuPreviewCanvas(
 
   return (
     <motion.div
-      ref={ref}
       layout
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
       className="mx-auto h-full overflow-hidden"
@@ -169,7 +168,7 @@ const MenuPreviewCanvas = forwardRef<HTMLDivElement>(function MenuPreviewCanvas(
           }}
         />
 
-        <div className="relative z-10">
+        <div ref={ref} id="menu-preview-content" className="relative z-10">
           <MenuHeader />
           {!hasSelectedItems && (
             <MenuCategoryNav
