@@ -34,6 +34,10 @@ export interface RestaurantInfo {
   name: string;
   tagline: string;
   logoUrl: string | null;
+  phone: string;
+  email: string;
+  address: string;
+  website: string;
 }
 
 export interface ThemeSettings {
@@ -123,6 +127,7 @@ interface MenuDesignerState {
   showCategoryNames: boolean;
   showTopShadow: boolean;
   showBottomShadow: boolean;
+  showFooter: boolean;
   toggleCategory: (id: string) => void;
   setActiveLayout: (layout: LayoutStyle) => void;
   setCanvasSize: (size: CanvasSize) => void;
@@ -140,6 +145,7 @@ interface MenuDesignerState {
   setShowCategoryNames: (show: boolean) => void;
   setShowTopShadow: (show: boolean) => void;
   setShowBottomShadow: (show: boolean) => void;
+  setShowFooter: (show: boolean) => void;
   clearCategoryItems: (categoryId: string, allItems: import("@/data/menuData").MenuItem[]) => void;
 }
 
@@ -148,7 +154,7 @@ export const useMenuDesigner = create<MenuDesignerState>((set) => ({
   activeLayout: "smart-grid",
   canvasSize: getDefaultCanvasSize("a4"),
   zoom: 1,
-  restaurantInfo: { name: "", tagline: "", logoUrl: null },
+  restaurantInfo: { name: "", tagline: "", logoUrl: null, phone: "", email: "", address: "", website: "" },
   theme: {
     primaryColor: "#a78bfa",
     accentColor: "#f472b6",
@@ -161,7 +167,7 @@ export const useMenuDesigner = create<MenuDesignerState>((set) => ({
     imageShape: "circular",
   },
   background: {
-    top: { type: "color", value: "#0d0d14", blur: 0, brightness: 1 },
+    top: { type: "color", value: "transparent", blur: 0, brightness: 1 },
     middle: { type: "color", value: "transparent", blur: 0, brightness: 1 },
     bottom: { type: "color", value: "transparent", blur: 0, brightness: 1 },
     full: { type: "color", value: "transparent", blur: 0, brightness: 1 },
@@ -184,6 +190,7 @@ export const useMenuDesigner = create<MenuDesignerState>((set) => ({
   showCategoryNames: true,
   showTopShadow: true,
   showBottomShadow: true,
+  showFooter: true,
   toggleCategory: (id) =>
     set((state) => ({
       selectedCategories: state.selectedCategories.includes(id)
@@ -236,6 +243,7 @@ export const useMenuDesigner = create<MenuDesignerState>((set) => ({
   setShowCategoryNames: (show) => set({ showCategoryNames: show }),
   setShowTopShadow: (show) => set({ showTopShadow: show }),
   setShowBottomShadow: (show) => set({ showBottomShadow: show }),
+  setShowFooter: (show) => set({ showFooter: show }),
   clearCategoryItems: (categoryId, allItems) =>
     set((state) => {
       const idsToRemove = allItems

@@ -65,32 +65,42 @@ export default function MenuFooter() {
       )}
 
       {/* Contact row */}
-      <div
-        className="mx-auto mb-4 flex max-w-md flex-wrap items-center justify-center gap-4 text-sm"
-        style={{ color: theme.textColor, opacity: 0.7 }}
-      >
-        <span className="flex items-center gap-1.5">
-          <Phone className="size-3.5" />
-          555-0100
-        </span>
-        <span className="flex items-center gap-1.5">
-          <Mail className="size-3.5" />
-          info@example.com
-        </span>
-        <span className="flex items-center gap-1.5">
-          <MapPin className="size-3.5" />
-          123 Main St
-        </span>
-      </div>
+      {(restaurantInfo.phone || restaurantInfo.email || restaurantInfo.address) && (
+        <div
+          className="mx-auto mb-4 flex max-w-md flex-wrap items-center justify-center gap-4 text-sm"
+          style={{ color: theme.textColor, opacity: 0.7 }}
+        >
+          {restaurantInfo.phone && (
+            <span className="flex items-center gap-1.5">
+              <Phone className="size-3.5" />
+              {restaurantInfo.phone}
+            </span>
+          )}
+          {restaurantInfo.email && (
+            <span className="flex items-center gap-1.5">
+              <Mail className="size-3.5" />
+              {restaurantInfo.email}
+            </span>
+          )}
+          {restaurantInfo.address && (
+            <span className="flex items-center gap-1.5">
+              <MapPin className="size-3.5" />
+              {restaurantInfo.address}
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Website */}
-      <div
-        className="mb-6 flex items-center justify-center gap-1.5 text-sm"
-        style={{ color: theme.primaryColor }}
-      >
-        <Globe className="size-3.5" />
-        <span>www.example.com</span>
-      </div>
+      {restaurantInfo.website && (
+        <div
+          className="mb-6 flex items-center justify-center gap-1.5 text-sm"
+          style={{ color: theme.primaryColor }}
+        >
+          <Globe className="size-3.5" />
+          <span>{restaurantInfo.website}</span>
+        </div>
+      )}
 
       {/* QR Code placeholder */}
       <div className="mb-6 flex flex-col items-center gap-2">

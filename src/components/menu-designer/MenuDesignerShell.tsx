@@ -263,17 +263,6 @@ export default function MenuDesignerShell() {
                   </AnimatePresence>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => setIsAIPanelOpen(true)}
-                  className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"
-                  style={{
-                    background: "linear-gradient(135deg, #7c3aed, #a78bfa)",
-                  }}
-                >
-                  <Sparkles className="size-3.5" />
-                  AI
-                </button>
               </div>
             </div>
 

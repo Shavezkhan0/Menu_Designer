@@ -36,6 +36,7 @@ const MenuPreviewCanvas = forwardRef<HTMLDivElement>(function MenuPreviewCanvas(
     background,
     canvasSize,
     zoom,
+    showFooter,
     setActiveSidebarSection,
   } = useMenuDesigner();
   const hasSelectedItems = selectedItemIds.length > 0;
@@ -69,8 +70,9 @@ const MenuPreviewCanvas = forwardRef<HTMLDivElement>(function MenuPreviewCanvas(
 
   if (!hasSelectedItems && selectedCategories.length === 0) {
     return (
-      <div className="flex min-h-full items-start justify-center p-8">
+      <div className="flex h-full overflow-auto p-8">
         <div
+          className="m-auto shrink-0"
           style={{ width: scaledW, height: scaledH, position: "relative" }}
         >
           <motion.div
@@ -143,8 +145,9 @@ const MenuPreviewCanvas = forwardRef<HTMLDivElement>(function MenuPreviewCanvas(
   }
 
   return (
-    <div className="flex min-h-full items-start justify-center p-8">
+    <div className="flex h-full overflow-auto p-8">
       <div
+        className="m-auto shrink-0"
         style={{ width: scaledW, height: scaledH, position: "relative" }}
       >
         <div
@@ -196,7 +199,7 @@ const MenuPreviewCanvas = forwardRef<HTMLDivElement>(function MenuPreviewCanvas(
                   </motion.div>
                 </AnimatePresence>
 
-                <MenuFooter />
+                {showFooter && <MenuFooter />}
               </div>
             </div>
           </div>
