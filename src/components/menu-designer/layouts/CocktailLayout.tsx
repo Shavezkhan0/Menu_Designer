@@ -2,7 +2,9 @@
 
 import { motion } from "framer-motion";
 import MenuItemCard from "@/components/menu-designer/MenuPreview/MenuItemCard";
+import CategoryHeader from "@/components/menu-designer/MenuPreview/CategoryHeader";
 import type { MenuItem } from "@/data/menuData";
+import { groupItemsByCategory } from "@/data/menuData";
 import { useMenuDesigner } from "@/hooks/useMenuDesigner";
 
 interface Props {
@@ -14,9 +16,7 @@ const container = {
   show: { transition: { staggerChildren: 0.06 } },
 };
 
-export default function CocktailLayout({ items }: Props) {
-  const { theme, setSelectedItemId } = useMenuDesigner();
-
+function buildCocktailGroups(items: MenuItem[]): (MenuItem | MenuItem[])[] {
   const groups: (MenuItem | MenuItem[])[] = [];
   for (let i = 0; i < items.length; i++) {
     if (i % 3 === 0) {
@@ -27,76 +27,76 @@ export default function CocktailLayout({ items }: Props) {
       groups.push(pair);
     }
   }
+  return groups;
+}
+
+export default function CocktailLayout({ items }: Props) {
+  const { theme, showCategoryNames, setSelectedItemId } = useMenuDesigner();
+  const categoryGroups = groupItemsByCategory(items);
 
   let globalIdx = 0;
 
-  return (
-    <motion.div
-      variants={container}
-      initial="hidden"
-      animate="show"
-      className="mx-auto max-w-4xl px-6 py-8"
-    >
-      {groups.map((group) => {
-        if (Array.isArray(group)) {
-          const currentIdx = globalIdx;
-          globalIdx += group.length;
-          return (
-            <div key={group[0].id} className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {group.map((item) => (
-                <MenuItemCard
-                  key={item.id}
-                  item={item}
-                  index={currentIdx + group.indexOf(item)}
-                  onSelect={() => setSelectedItemId(item.id)}
-                />
-              ))}
-            </div>
-          );
-        }
-
-        const item = group;
-        const idx = globalIdx++;
-
+  const renderCocktailGroups = (subGroups: (MenuItem | MenuItem[])[]) => {
+    return subGroups.map((subGroup) => {
+      if (Array.isArray(subGroup)) {
+        const currentIdx = globalIdx;
+        globalIdx += subGroup.length;
         return (
-          <div key={item.id} className="mb-6">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: idx * 0.06 }}
-              onClick={() => setSelectedItemId(item.id)}
-              className="group relative cursor-pointer overflow-hidden rounded-xl p-6"
-              style={{
-                background: `linear-gradient(135deg, rgba(167,139,250,0.06) 0%, transparent 60%)`,
-                border: `1px solid rgba(167,139,250,0.15)`,
-                boxShadow: `0 0 40px rgba(167,139,250,0.05)`,
-              }}
-            >
-              <div
-                className="pointer-events-none absolute -inset-20 opacity-30"
-                style={{
-                  background: `radial-gradient(circle at 30% 50%, rgba(167,139,250,0.08) 0%, transparent 60%)`,
-                }}
+          <div key={subGroup[0].id} className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {subGroup.map((item) => (
+              <MenuItemCard
+                key={item.id}
+                item={item}
+                index={currentIdx + subGroup.indexOf(item)}
+                onSelect={() => setSelectedItemId(item.id)}
               />
+            ))}
+          </div>
+        );
+      }
 
-              <div className="relative z-10 flex flex-col md:flex-row gap-6">
-                {item.image && theme.imageShape !== "none" && (
-                  <div 
-                    className="w-full md:w-1/3 shrink-0 overflow-hidden"
-                    style={{
-                      borderRadius: theme.imageShape === "circular" ? "50%" : theme.imageShape === "square" || theme.imageShape === "blend" ? "0px" : "8px",
-                      mixBlendMode: theme.imageShape === "blend" ? "screen" : "normal",
-                    }}
-                  >
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="aspect-square w-full object-cover"
-                    />
-                  </div>
-                )}
-                <div className="flex-1">
-                  <div className="mb-1 flex items-start justify-between">
+      const item = subGroup;
+      const idx = globalIdx++;
+
+      return (
+        <div key={item.id} className="mb-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: idx * 0.06 }}
+            onClick={() => setSelectedItemId(item.id)}
+            className="group relative cursor-pointer overflow-hidden rounded-xl p-6"
+            style={{
+              background: `linear-gradient(135deg, rgba(167,139,250,0.06) 0%, transparent 60%)`,
+              border: `1px solid rgba(167,139,250,0.15)`,
+              boxShadow: `0 0 40px rgba(167,139,250,0.05)`,
+            }}
+          >
+            <div
+              className="pointer-events-none absolute -inset-20 opacity-30"
+              style={{
+                background: `radial-gradient(circle at 30% 50%, rgba(167,139,250,0.08) 0%, transparent 60%)`,
+              }}
+            />
+
+            <div className="relative z-10 flex flex-col md:flex-row gap-6">
+              {item.image && theme.imageShape !== "none" && (
+                <div
+                  className="w-full md:w-1/3 shrink-0 overflow-hidden"
+                  style={{
+                    borderRadius: theme.imageShape === "circular" ? "50%" : theme.imageShape === "square" || theme.imageShape === "blend" ? "0px" : "8px",
+                    mixBlendMode: theme.imageShape === "blend" ? "screen" : "normal",
+                  }}
+                >
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="aspect-square w-full object-cover"
+                  />
+                </div>
+              )}
+              <div className="flex-1">
+                <div className="mb-1 flex items-start justify-between">
                   <h3
                     className="text-xl font-bold leading-tight"
                     style={{
@@ -151,20 +151,44 @@ export default function CocktailLayout({ items }: Props) {
                   )}
                 </div>
 
-                  <div
-                    className="mt-4"
-                    style={{
-                      height: "1px",
-                      background: `linear-gradient(to right, transparent, ${theme.primaryColor}, transparent)`,
-                      opacity: 0.3,
-                    }}
-                  />
-                </div>
+                <div
+                  className="mt-4"
+                  style={{
+                    height: "1px",
+                    background: `linear-gradient(to right, transparent, ${theme.primaryColor}, transparent)`,
+                    opacity: 0.3,
+                  }}
+                />
               </div>
-            </motion.div>
-          </div>
-        );
-      })}
+            </div>
+          </motion.div>
+        </div>
+      );
+    });
+  };
+
+  return (
+    <motion.div
+      variants={container}
+      initial="hidden"
+      animate="show"
+      className="mx-auto max-w-4xl px-6 py-8"
+    >
+      {showCategoryNames ? (
+        categoryGroups.map((group) => {
+          const subGroups = buildCocktailGroups(group.items);
+          return (
+            <section key={group.category.id} className="mb-8">
+              <CategoryHeader categoryId={group.category.id} />
+              {renderCocktailGroups(subGroups)}
+            </section>
+          );
+        })
+      ) : (
+        <section className="mb-8">
+          {renderCocktailGroups(buildCocktailGroups(items))}
+        </section>
+      )}
     </motion.div>
   );
 }

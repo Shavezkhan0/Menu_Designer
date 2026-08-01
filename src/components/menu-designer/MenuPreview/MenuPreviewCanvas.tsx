@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef, forwardRef } from "react";
+import { forwardRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
-import { useMenuDesigner, getCanvasPixelSize, type LayoutStyle } from "@/hooks/useMenuDesigner";
-import { MENU_ITEMS, MENU_CATEGORIES } from "@/data/menuData";
+import { useMenuDesigner, getCanvasPixelSize, getBackgroundImageCss, type LayoutStyle } from "@/hooks/useMenuDesigner";
+import { MENU_ITEMS } from "@/data/menuData";
 import MenuHeader from "./MenuHeader";
-import MenuCategoryNav from "./MenuCategoryNav";
 import MenuFooter from "./MenuFooter";
 import SingleColumnLayout from "@/components/menu-designer/layouts/SingleColumnLayout";
 import TwoColumnLayout from "@/components/menu-designer/layouts/TwoColumnLayout";
@@ -39,33 +38,14 @@ const MenuPreviewCanvas = forwardRef<HTMLDivElement>(function MenuPreviewCanvas(
     zoom,
     setActiveSidebarSection,
   } = useMenuDesigner();
-  const [activeCategory, setActiveCategory] = useState<string>("");
-  const firstCategory = useRef(true);
-
   const hasSelectedItems = selectedItemIds.length > 0;
 
-  const visibleCategories =
+  const filteredItems =
     selectedCategories.length > 0
-      ? MENU_CATEGORIES.filter((c) => selectedCategories.includes(c.id))
-      : MENU_CATEGORIES;
-
-  useEffect(() => {
-    if (firstCategory.current && visibleCategories.length > 0) {
-      setActiveCategory(visibleCategories[0].id);
-      firstCategory.current = false;
-    }
-  }, [visibleCategories]);
-
-  useEffect(() => {
-    const ids = visibleCategories.map((c) => c.id);
-    if (!ids.includes(activeCategory) && ids.length > 0) {
-      setActiveCategory(ids[0]);
-    }
-  }, [selectedCategories, activeCategory, visibleCategories]);
-
-  const filteredItems = hasSelectedItems
-    ? MENU_ITEMS.filter((item) => selectedItemIds.includes(item.id))
-    : MENU_ITEMS.filter((item) => item.category === activeCategory);
+      ? MENU_ITEMS.filter((item) => selectedCategories.includes(item.category))
+      : hasSelectedItems
+        ? MENU_ITEMS.filter((item) => selectedItemIds.includes(item.id))
+        : MENU_ITEMS;
 
   const { width: pxW, height: pxH } = getCanvasPixelSize(canvasSize);
   const scaledW = Math.round(pxW * zoom);
@@ -73,14 +53,14 @@ const MenuPreviewCanvas = forwardRef<HTMLDivElement>(function MenuPreviewCanvas(
 
   const fullBgStyle: React.CSSProperties =
     background.full.type === "image" && background.full.value
-      ? { backgroundImage: `url(${background.full.value})`, backgroundSize: "cover", backgroundPosition: "center" }
+      ? { backgroundImage: getBackgroundImageCss(background.full.value), backgroundSize: "cover", backgroundPosition: "center" }
       : background.full.type === "gradient"
         ? { backgroundImage: background.full.value }
         : { backgroundColor: background.full.value };
 
   const middleBgStyle: React.CSSProperties =
     background.middle.type === "image" && background.middle.value
-      ? { backgroundImage: `url(${background.middle.value})`, backgroundSize: "cover", backgroundPosition: "center" }
+      ? { backgroundImage: getBackgroundImageCss(background.middle.value), backgroundSize: "cover", backgroundPosition: "center" }
       : background.middle.type === "gradient"
         ? { backgroundImage: background.middle.value }
         : { backgroundColor: background.middle.value };
@@ -203,16 +183,10 @@ const MenuPreviewCanvas = forwardRef<HTMLDivElement>(function MenuPreviewCanvas(
 
               <div className="relative z-10">
                 <MenuHeader />
-              {!hasSelectedItems && (
-                <MenuCategoryNav
-                  activeCategory={activeCategory}
-                  onCategoryChange={setActiveCategory}
-                />
-              )}
 
                 <AnimatePresence mode="wait">
                   <motion.div
-                    key={hasSelectedItems ? `selected-${activeLayout}` : `${activeLayout}-${activeCategory}`}
+                    key={`${activeLayout}-${filteredItems.length}`}
                     initial={{ opacity: 0, scale: 0.99 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.99 }}

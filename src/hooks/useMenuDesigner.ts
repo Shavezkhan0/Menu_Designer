@@ -1,5 +1,25 @@
 import { create } from "zustand";
 
+export function sanitizeBackgroundImage(value: string): string {
+  const trimmed = value.trim();
+  const match = trimmed.match(/^url\(\s*["']?(.*?)["']?\s*\)$/i);
+  return match ? match[1].trim() : trimmed;
+}
+
+export function getBackgroundImageCss(value: string): string {
+  const url = sanitizeBackgroundImage(value);
+  if (
+    url.startsWith("data:") ||
+    url.startsWith("http://") ||
+    url.startsWith("https://") ||
+    url.startsWith("/") ||
+    url.startsWith("#")
+  ) {
+    return `url("${url}")`;
+  }
+  return url;
+}
+
 export type LayoutStyle =
   | "single-column"
   | "two-column"
@@ -100,6 +120,9 @@ interface MenuDesignerState {
   isAIPanelOpen: boolean;
   activeBrowseCategory: string | null;
   selectedItemIds: string[];
+  showCategoryNames: boolean;
+  showTopShadow: boolean;
+  showBottomShadow: boolean;
   toggleCategory: (id: string) => void;
   setActiveLayout: (layout: LayoutStyle) => void;
   setCanvasSize: (size: CanvasSize) => void;
@@ -114,6 +137,9 @@ interface MenuDesignerState {
   setIsAIPanelOpen: (open: boolean) => void;
   setActiveBrowseCategory: (id: string | null) => void;
   toggleItem: (id: string) => void;
+  setShowCategoryNames: (show: boolean) => void;
+  setShowTopShadow: (show: boolean) => void;
+  setShowBottomShadow: (show: boolean) => void;
   clearCategoryItems: (categoryId: string, allItems: import("@/data/menuData").MenuItem[]) => void;
 }
 
@@ -155,6 +181,9 @@ export const useMenuDesigner = create<MenuDesignerState>((set) => ({
   isAIPanelOpen: false,
   activeBrowseCategory: null,
   selectedItemIds: [],
+  showCategoryNames: true,
+  showTopShadow: true,
+  showBottomShadow: true,
   toggleCategory: (id) =>
     set((state) => ({
       selectedCategories: state.selectedCategories.includes(id)
@@ -175,13 +204,14 @@ export const useMenuDesigner = create<MenuDesignerState>((set) => ({
   setBackground: (partial) =>
     set((state) => {
       const activeLayer = state.background.activeLayer;
+      const nextLayer = { ...state.background[activeLayer], ...partial };
+      if (nextLayer.type === "image" && nextLayer.value) {
+        nextLayer.value = sanitizeBackgroundImage(nextLayer.value);
+      }
       return {
         background: {
           ...state.background,
-          [activeLayer]: {
-            ...state.background[activeLayer],
-            ...partial,
-          },
+          [activeLayer]: nextLayer,
         },
       };
     }),
@@ -203,6 +233,9 @@ export const useMenuDesigner = create<MenuDesignerState>((set) => ({
         ? state.selectedItemIds.filter((i) => i !== id)
         : [...state.selectedItemIds, id],
     })),
+  setShowCategoryNames: (show) => set({ showCategoryNames: show }),
+  setShowTopShadow: (show) => set({ showTopShadow: show }),
+  setShowBottomShadow: (show) => set({ showBottomShadow: show }),
   clearCategoryItems: (categoryId, allItems) =>
     set((state) => {
       const idsToRemove = allItems

@@ -2,10 +2,10 @@
 
 import { motion } from "framer-motion";
 import { Phone, Mail, MapPin, Globe, QrCode } from "lucide-react";
-import { useMenuDesigner } from "@/hooks/useMenuDesigner";
+import { useMenuDesigner, getBackgroundImageCss } from "@/hooks/useMenuDesigner";
 
 export default function MenuFooter() {
-  const { restaurantInfo, theme, background } = useMenuDesigner();
+  const { restaurantInfo, theme, background, showBottomShadow } = useMenuDesigner();
 
   return (
     <motion.div
@@ -21,7 +21,7 @@ export default function MenuFooter() {
         style={{
           filter: `blur(${background.bottom.blur}px) brightness(${background.bottom.brightness})`,
           ...(background.bottom.type === "image" && background.bottom.value
-            ? { backgroundImage: `url(${background.bottom.value})`, backgroundSize: "cover", backgroundPosition: "center" }
+            ? { backgroundImage: getBackgroundImageCss(background.bottom.value), backgroundSize: "cover", backgroundPosition: "center" }
             : background.bottom.type === "gradient"
               ? { backgroundImage: background.bottom.value }
               : { backgroundColor: background.bottom.value }),
@@ -29,12 +29,14 @@ export default function MenuFooter() {
       />
 
       {/* Gradient overlay to blend with main background */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: `linear-gradient(to top, transparent, ${theme.backgroundColor})`,
-        }}
-      />
+      {showBottomShadow && (
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `linear-gradient(to top, transparent, ${theme.backgroundColor})`,
+          }}
+        />
+      )}
 
       {/* Content wrapper */}
       <div className="relative z-10">

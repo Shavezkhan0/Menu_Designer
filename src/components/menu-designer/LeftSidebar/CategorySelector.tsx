@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, Plus, ArrowLeft } from "lucide-react";
+import { Check, Plus, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { MENU_CATEGORIES, MENU_ITEMS } from "@/data/menuData";
 import { useMenuDesigner } from "@/hooks/useMenuDesigner";
 
@@ -29,6 +29,8 @@ export default function CategorySelector() {
     setActiveBrowseCategory,
     selectedItemIds,
     toggleItem,
+    showCategoryNames,
+    setShowCategoryNames,
   } = useMenuDesigner();
 
   return (
@@ -41,12 +43,40 @@ export default function CategorySelector() {
             {...slideFade}
             transition={{ duration: 0.2 }}
           >
-            <p
-              className="mb-3 text-[11px] font-medium tracking-[0.1em]"
-              style={{ color: "rgba(113,113,122,1)" }}
-            >
-              CATEGORIES
-            </p>
+            <div className="mb-3 flex items-center justify-between">
+              <p
+                className="text-[11px] font-medium tracking-[0.1em]"
+                style={{ color: "rgba(113,113,122,1)" }}
+              >
+                CATEGORIES
+              </p>
+
+              {/* Show category names toggle */}
+              <button
+                type="button"
+                onClick={() => setShowCategoryNames(!showCategoryNames)}
+                className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors"
+                style={{
+                  color: showCategoryNames ? "#a78bfa" : "rgba(161,161,170,1)",
+                  border: showCategoryNames
+                    ? "1px solid rgba(167,139,250,0.3)"
+                    : "1px solid rgba(63,63,70,1)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "rgba(39,39,42,0.5)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "transparent";
+                }}
+              >
+                {showCategoryNames ? (
+                  <Eye className="size-3" />
+                ) : (
+                  <EyeOff className="size-3" />
+                )}
+                {showCategoryNames ? "Names On" : "Names Off"}
+              </button>
+            </div>
             <div className="grid grid-cols-2 gap-2">
               {MENU_CATEGORIES.map((category) => {
                 const count = getItemCount(category.id);

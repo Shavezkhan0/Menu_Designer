@@ -758,3 +758,37 @@ export const MENU_ITEMS: MenuItem[] = [
   },
   
 ];
+
+export interface MenuItemGroup {
+  category: MenuCategory;
+  items: MenuItem[];
+}
+
+export function groupItemsByCategory(items: MenuItem[]): MenuItemGroup[] {
+  const grouped = new Map<string, MenuItemGroup>();
+  for (const item of items) {
+    let group = grouped.get(item.category);
+    if (!group) {
+      const category =
+        MENU_CATEGORIES.find((c) => c.id === item.category) ?? {
+          id: item.category,
+          label: item.category,
+          emoji: "🍽️",
+          description: "",
+        };
+      group = { category, items: [] };
+      grouped.set(item.category, group);
+    }
+    group.items.push(item);
+  }
+
+  const ordered: MenuItemGroup[] = [];
+  for (const category of MENU_CATEGORIES) {
+    const group = grouped.get(category.id);
+    if (group) ordered.push(group);
+  }
+  for (const group of grouped.values()) {
+    if (!ordered.includes(group)) ordered.push(group);
+  }
+  return ordered;
+}

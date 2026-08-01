@@ -2,7 +2,8 @@
 
 import { motion } from "framer-motion";
 import type { MenuItem } from "@/data/menuData";
-import { MENU_CATEGORIES } from "@/data/menuData";
+import { groupItemsByCategory } from "@/data/menuData";
+import CategoryHeader from "@/components/menu-designer/MenuPreview/CategoryHeader";
 import { useMenuDesigner } from "@/hooks/useMenuDesigner";
 import type { ThemeSettings, MenuBorderSettings, BackgroundSettings } from "@/hooks/useMenuDesigner";
 
@@ -20,8 +21,6 @@ const CATEGORY_EMOJI: Record<string, string> = {
   "soft-drinks": "🥛",
   juices: "🍹",
 };
-
-const GOLD = "#c9a84c";
 
 function chunkItems(items: MenuItem[]): (MenuItem | MenuItem[])[] {
   const groups: (MenuItem | MenuItem[])[] = [];
@@ -69,17 +68,27 @@ function getImageStyle(shape: ThemeSettings["imageShape"]) {
 }
 
 export default function SmartGridLayout({ items }: Props) {
-  const { theme, menuBorder, background, setSelectedItemId } = useMenuDesigner();
-  const groups = chunkItems(items);
-
+  const { theme, menuBorder, background, showCategoryNames, setSelectedItemId } = useMenuDesigner();
+  
   if (items.length === 0) return <></>;
 
-  const categoryId = items[0].category;
-  const categoryLabel =
-    MENU_CATEGORIES.find((c) => c.id === categoryId)?.label?.toUpperCase() ??
-    categoryId.toUpperCase();
-
   const borderInline = getBorderStyle(menuBorder);
+
+  // If we show category names, group by category. Otherwise, treat as one continuous list.
+  const content = showCategoryNames ? (
+    <div className="space-y-10">
+      {groupItemsByCategory(items).map((group) => (
+        <div key={group.category.id}>
+          <CategoryHeader categoryId={group.category.id} />
+          {renderChunks(chunkItems(group.items), theme, setSelectedItemId)}
+        </div>
+      ))}
+    </div>
+  ) : (
+    <div className="space-y-10">
+      {renderChunks(chunkItems(items), theme, setSelectedItemId)}
+    </div>
+  );
 
   return (
     <motion.div
@@ -101,68 +110,55 @@ export default function SmartGridLayout({ items }: Props) {
           ...borderInline,
         }}
       >
-        {/* Category title */}
-        <div className="mb-8 flex flex-col items-center">
-          <h2
-            className="text-center text-lg font-bold tracking-[0.15em]"
-            style={{
-              fontFamily: theme.fontFamily,
-              color: theme.headingColor,
-            }}
-          >
-            {categoryLabel}
-          </h2>
-          <hr
-            style={{
-              marginTop: "8px",
-              width: "60px",
-              border: "none",
-              borderTop: `1px solid ${GOLD}`,
-              opacity: 0.4,
-            }}
-          />
-        </div>
-
-        {/* Items */}
-        <div className="space-y-10">
-          {groups.map((group) => {
-            if (Array.isArray(group)) {
-              return (
-                <div
-                  key={`pair-${group[0].id}-${group[1].id}`}
-                  className="grid grid-cols-2 gap-x-6 gap-y-10"
-                >
-                  {group.map((item, idx) => (
-                    <SmartCard
-                      key={item.id}
-                      item={item}
-                      index={idx}
-                      theme={theme}
-                      imageShape={theme.imageShape}
-                      onSelect={() => setSelectedItemId(item.id)}
-                    />
-                  ))}
-                </div>
-              );
-            }
-
-            return (
-              <div key={`solo-${group.id}`} className="flex justify-center">
-                <div style={{ width: "48%" }}>
-                  <SmartCard
-                    item={group}
-                    index={0}
-                    theme={theme}
-                    imageShape={theme.imageShape}
-                    onSelect={() => setSelectedItemId(group.id)}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        {content}
       </div>
     </motion.div>
+  );
+}
+
+function renderChunks(
+  chunks: (MenuItem | MenuItem[])[],
+  theme: ThemeSettings,
+  setSelectedItemId: (id: string) => void
+) {
+  return (
+    <div className="space-y-10">
+      {chunks.map((chunk, i) => {
+        if (Array.isArray(chunk)) {
+          return (
+            <div
+              key={`pair-${chunk[0].id}-${chunk[1].id}`}
+              className="grid grid-cols-2 gap-x-6 gap-y-10"
+            >
+              {chunk.map((item, idx) => (
+                <SmartCard
+                  key={item.id}
+                  item={item}
+                  index={idx}
+                  theme={theme}
+                  imageShape={theme.imageShape}
+                  onSelect={() => setSelectedItemId(item.id)}
+                />
+              ))}
+            </div>
+          );
+        }
+
+        return (
+          <div key={`solo-${chunk.id}`} className="flex justify-center">
+            <div style={{ width: "48%" }}>
+              <SmartCard
+                item={chunk}
+                index={0}
+                theme={theme}
+                imageShape={theme.imageShape}
+                onSelect={() => setSelectedItemId(chunk.id)}
+              />
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 }
 

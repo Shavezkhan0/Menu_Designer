@@ -30,7 +30,7 @@ const BG_TABS: { id: BackgroundType; label: string }[] = [
 ];
 
 export default function BackgroundPanel() {
-  const { background, setBackground, setActiveBackgroundLayer, menuBorder, setMenuBorder } = useMenuDesigner();
+  const { background, setBackground, setActiveBackgroundLayer, menuBorder, setMenuBorder, showTopShadow, setShowTopShadow, showBottomShadow, setShowBottomShadow } = useMenuDesigner();
   const activeLayerConfig = background[background.activeLayer];
   const colorInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -383,6 +383,60 @@ export default function BackgroundPanel() {
           </div>
         </div>
       )}
+
+      {/* Separator */}
+      <div
+        className="my-4"
+        style={{ height: "1px", backgroundColor: "rgba(255,255,255,0.04)" }}
+      />
+
+      {/* ── Shadows ── */}
+      <p
+        className="mb-3 text-[11px] font-medium tracking-[0.1em]"
+        style={{ color: "rgba(113,113,122,1)" }}
+      >
+        SHADOWS
+      </p>
+      {[
+        {
+          label: "Top Shadow",
+          checked: showTopShadow,
+          onChange: setShowTopShadow,
+        },
+        {
+          label: "Bottom Shadow",
+          checked: showBottomShadow,
+          onChange: setShowBottomShadow,
+        },
+      ].map(({ label, checked, onChange }) => (
+        <div
+          key={label}
+          className="mb-2 flex items-center justify-between rounded-lg px-3 py-2.5"
+          style={{
+            backgroundColor: "rgba(24,24,27,1)",
+            border: "1px solid rgba(63,63,70,1)",
+          }}
+        >
+          <span className="text-xs font-medium" style={{ color: "rgba(161,161,170,1)" }}>
+            {label}
+          </span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={checked}
+            onClick={() => onChange(!checked)}
+            className="relative h-5 w-9 rounded-full transition-colors"
+            style={{
+              backgroundColor: checked ? "#a78bfa" : "rgba(63,63,70,1)",
+            }}
+          >
+            <span
+              className="absolute top-0.5 size-4 rounded-full bg-white shadow transition-transform"
+              style={{ left: "2px", transform: checked ? "translateX(16px)" : "translateX(0)" }}
+            />
+          </button>
+        </div>
+      ))}
 
       {/* Separator */}
       <div

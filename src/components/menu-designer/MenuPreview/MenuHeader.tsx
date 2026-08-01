@@ -1,15 +1,15 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useMenuDesigner } from "@/hooks/useMenuDesigner";
+import { useMenuDesigner, getBackgroundImageCss } from "@/hooks/useMenuDesigner";
 
 export default function MenuHeader() {
-  const { restaurantInfo, theme, background } =
+  const { restaurantInfo, theme, background, showTopShadow } =
     useMenuDesigner();
 
   const bgStyle =
     background.top.type === "image" && background.top.value
-      ? { backgroundImage: `url(${background.top.value})`, backgroundSize: "cover", backgroundPosition: "center" }
+      ? { backgroundImage: getBackgroundImageCss(background.top.value), backgroundSize: "cover", backgroundPosition: "center" }
       : background.top.type === "gradient"
         ? { backgroundImage: background.top.value }
         : { backgroundColor: background.top.value };
@@ -34,12 +34,14 @@ export default function MenuHeader() {
       />
 
       {/* Gradient overlay */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: `linear-gradient(to bottom, transparent, ${theme.backgroundColor})`,
-        }}
-      />
+      {showTopShadow && (
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `linear-gradient(to bottom, transparent, ${theme.backgroundColor})`,
+          }}
+        />
+      )}
 
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center">

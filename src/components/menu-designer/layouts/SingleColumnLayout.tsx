@@ -2,7 +2,9 @@
 
 import { motion } from "framer-motion";
 import MenuItemCard from "@/components/menu-designer/MenuPreview/MenuItemCard";
+import CategoryHeader from "@/components/menu-designer/MenuPreview/CategoryHeader";
 import type { MenuItem } from "@/data/menuData";
+import { groupItemsByCategory } from "@/data/menuData";
 import { useMenuDesigner } from "@/hooks/useMenuDesigner";
 
 interface Props {
@@ -15,23 +17,19 @@ const container = {
 };
 
 export default function SingleColumnLayout({ items }: Props) {
-  const { setSelectedItemId } = useMenuDesigner();
+  const { setSelectedItemId, showCategoryNames } = useMenuDesigner();
+  const groups = groupItemsByCategory(items);
 
-  return (
-    <motion.div
-      variants={container}
-      initial="hidden"
-      animate="show"
-      className="mx-auto max-w-2xl space-y-4 px-6 py-8"
-    >
-      {items.map((item, i) => (
+  const renderItems = (itemsToRender: MenuItem[]) => (
+    <div className="space-y-4">
+      {itemsToRender.map((item, i) => (
         <div key={item.id}>
           <MenuItemCard
             item={item}
             index={i}
             onSelect={() => setSelectedItemId(item.id)}
           />
-          {i < items.length - 1 && (
+          {i < itemsToRender.length - 1 && (
             <div
               className="mt-4"
               style={{
@@ -42,6 +40,26 @@ export default function SingleColumnLayout({ items }: Props) {
           )}
         </div>
       ))}
+    </div>
+  );
+
+  return (
+    <motion.div
+      variants={container}
+      initial="hidden"
+      animate="show"
+      className="mx-auto max-w-2xl space-y-8 px-6 py-8"
+    >
+      {showCategoryNames ? (
+        groups.map((group) => (
+          <section key={group.category.id}>
+            <CategoryHeader categoryId={group.category.id} />
+            {renderItems(group.items)}
+          </section>
+        ))
+      ) : (
+        renderItems(items)
+      )}
     </motion.div>
   );
 }
