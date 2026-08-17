@@ -109,14 +109,14 @@ export default function MenuFooter() {
           style={{
             width: "64px",
             height: "64px",
-            backgroundColor: "rgba(39,39,42,1)",
+            backgroundColor: "rgba(0,0,0,0.05)",
           }}
         >
-          <QrCode className="size-8" style={{ color: "rgba(113,113,122,1)" }} />
+          <QrCode className="size-8" style={{ color: "rgba(80,80,80,1)" }} />
         </div>
         <span
           className="text-[10px]"
-          style={{ color: "rgba(113,113,122,1)" }}
+          style={{ color: "rgba(80,80,80,1)" }}
         >
           Scan for Menu
         </span>
@@ -134,8 +134,8 @@ export default function MenuFooter() {
       <div
         className="mx-auto inline-block rounded-full px-3 py-1 text-[10px] font-medium"
         style={{
-          backgroundColor: "rgba(63,63,70,1)",
-          color: "rgba(161,161,170,1)",
+          backgroundColor: "rgba(0,0,0,0.06)",
+          color: "rgba(80,80,80,1)",
         }}
       >
         Generated with Menu Designer

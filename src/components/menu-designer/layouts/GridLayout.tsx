@@ -3,58 +3,29 @@
 import { motion } from "framer-motion";
 import MenuItemCard from "@/components/menu-designer/MenuPreview/MenuItemCard";
 import CategoryHeader from "@/components/menu-designer/MenuPreview/CategoryHeader";
-import type { MenuItem } from "@/data/menuData";
-import { groupItemsByCategory } from "@/data/menuData";
-import { useMenuDesigner } from "@/hooks/useMenuDesigner";
+import { useMenuDesigner, type PageLayoutProps } from "@/hooks/useMenuDesigner";
 
-interface Props {
-  items: MenuItem[];
-}
-
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.03 } },
-};
-
-export default function GridLayout({ items }: Props) {
-  const { setSelectedItemId, showCategoryNames } = useMenuDesigner();
-  const groups = groupItemsByCategory(items);
+export default function GridLayout({ items, showCategoryHeader, categoryId }: PageLayoutProps) {
+  const { setSelectedItemId } = useMenuDesigner();
 
   return (
     <motion.div
-      variants={container}
-      initial="hidden"
-      animate="show"
-      className="mx-auto max-w-6xl space-y-10 px-6 py-8"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.25 }}
+      className="mx-auto max-w-6xl space-y-4 px-6 py-8"
     >
-      {showCategoryNames ? (
-        groups.map((group) => (
-          <section key={group.category.id}>
-            <CategoryHeader categoryId={group.category.id} />
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {group.items.map((item, i) => (
-                <MenuItemCard
-                  key={item.id}
-                  item={item}
-                  index={i}
-                  onSelect={() => setSelectedItemId(item.id)}
-                />
-              ))}
-            </div>
-          </section>
-        ))
-      ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((item, i) => (
-            <MenuItemCard
-              key={item.id}
-              item={item}
-              index={i}
-              onSelect={() => setSelectedItemId(item.id)}
-            />
-          ))}
-        </div>
-      )}
+      {showCategoryHeader && categoryId && <CategoryHeader categoryId={categoryId} />}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {items.map((item, i) => (
+          <MenuItemCard
+            key={item.id}
+            item={item}
+            index={i}
+            onSelect={() => setSelectedItemId(item.id)}
+          />
+        ))}
+      </div>
     </motion.div>
   );
 }

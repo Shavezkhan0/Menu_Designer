@@ -1,5 +1,7 @@
 import { create } from "zustand";
 
+import type { MenuItem } from "@/data/menuData";
+
 export function sanitizeBackgroundImage(value: string): string {
   const trimmed = value.trim();
   const match = trimmed.match(/^url\(\s*["']?(.*?)["']?\s*\)$/i);
@@ -82,6 +84,12 @@ export interface BackgroundSettings {
 export type CanvasPreset = "a4" | "a3" | "a5" | "a6" | "letter" | "custom";
 export type CanvasUnit = "px" | "mm" | "in";
 
+export interface PageLayoutProps {
+  items: MenuItem[];
+  showCategoryHeader: boolean;
+  categoryId: string | null;
+}
+
 export interface CanvasSize {
   preset: CanvasPreset;
   width: number;
@@ -127,7 +135,9 @@ interface MenuDesignerState {
   showCategoryNames: boolean;
   showTopShadow: boolean;
   showBottomShadow: boolean;
+  showHeader: boolean;
   showFooter: boolean;
+  currentPage: number;
   toggleCategory: (id: string) => void;
   setActiveLayout: (layout: LayoutStyle) => void;
   setCanvasSize: (size: CanvasSize) => void;
@@ -145,7 +155,9 @@ interface MenuDesignerState {
   setShowCategoryNames: (show: boolean) => void;
   setShowTopShadow: (show: boolean) => void;
   setShowBottomShadow: (show: boolean) => void;
+  setShowHeader: (show: boolean) => void;
   setShowFooter: (show: boolean) => void;
+  setCurrentPage: (page: number) => void;
   clearCategoryItems: (categoryId: string, allItems: import("@/data/menuData").MenuItem[]) => void;
 }
 
@@ -160,10 +172,10 @@ export const useMenuDesigner = create<MenuDesignerState>((set) => ({
     accentColor: "#f472b6",
     fontFamily: "Playfair Display, serif",
     cardStyle: "glass",
-    textColor: "#f4f4f5",
-    backgroundColor: "#111118",
-    headingColor: "#ffffff",
-    subheadingColor: "rgba(200,190,170,0.8)",
+    textColor: "#1a1a1a",
+    backgroundColor: "#ffffff",
+    headingColor: "#1a1a1a",
+    subheadingColor: "rgba(60,60,60,0.8)",
     imageShape: "circular",
   },
   background: {
@@ -188,9 +200,11 @@ export const useMenuDesigner = create<MenuDesignerState>((set) => ({
   activeBrowseCategory: null,
   selectedItemIds: [],
   showCategoryNames: true,
-  showTopShadow: true,
-  showBottomShadow: true,
-  showFooter: true,
+  showTopShadow: false,
+  showBottomShadow: false,
+  showHeader: false,
+  showFooter: false,
+  currentPage: 1,
   toggleCategory: (id) =>
     set((state) => ({
       selectedCategories: state.selectedCategories.includes(id)
@@ -243,7 +257,9 @@ export const useMenuDesigner = create<MenuDesignerState>((set) => ({
   setShowCategoryNames: (show) => set({ showCategoryNames: show }),
   setShowTopShadow: (show) => set({ showTopShadow: show }),
   setShowBottomShadow: (show) => set({ showBottomShadow: show }),
+  setShowHeader: (show) => set({ showHeader: show }),
   setShowFooter: (show) => set({ showFooter: show }),
+  setCurrentPage: (page) => set({ currentPage: page }),
   clearCategoryItems: (categoryId, allItems) =>
     set((state) => {
       const idsToRemove = allItems

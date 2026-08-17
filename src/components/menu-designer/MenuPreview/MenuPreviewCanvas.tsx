@@ -1,12 +1,14 @@
 "use client";
 
-import { forwardRef } from "react";
+import { forwardRef, useEffect, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import { useMenuDesigner, getCanvasPixelSize, getBackgroundImageCss, type LayoutStyle } from "@/hooks/useMenuDesigner";
 import { MENU_ITEMS } from "@/data/menuData";
+import { computeMenuPages } from "@/lib/pagination";
 import MenuHeader from "./MenuHeader";
 import MenuFooter from "./MenuFooter";
+import PageNavigation from "./PageNavigation";
 import SingleColumnLayout from "@/components/menu-designer/layouts/SingleColumnLayout";
 import TwoColumnLayout from "@/components/menu-designer/layouts/TwoColumnLayout";
 import GridLayout from "@/components/menu-designer/layouts/GridLayout";
@@ -36,7 +38,11 @@ const MenuPreviewCanvas = forwardRef<HTMLDivElement>(function MenuPreviewCanvas(
     background,
     canvasSize,
     zoom,
+    showHeader,
     showFooter,
+    showCategoryNames,
+    currentPage,
+    setCurrentPage,
     setActiveSidebarSection,
   } = useMenuDesigner();
   const hasSelectedItems = selectedItemIds.length > 0;
@@ -47,6 +53,25 @@ const MenuPreviewCanvas = forwardRef<HTMLDivElement>(function MenuPreviewCanvas(
       : hasSelectedItems
         ? MENU_ITEMS.filter((item) => selectedItemIds.includes(item.id))
         : MENU_ITEMS;
+
+  const pages = useMemo(
+    () => computeMenuPages(filteredItems, activeLayout, { showCategoryNames }),
+    [filteredItems, activeLayout, showCategoryNames]
+  );
+
+  const totalPages = pages.length;
+  const safeCurrentPage = Math.min(Math.max(1, currentPage), totalPages || 1);
+  const currentPageData = pages[safeCurrentPage - 1] ?? null;
+
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages, setCurrentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedItemIds, selectedCategories, activeLayout, showCategoryNames, setCurrentPage]);
 
   const { width: pxW, height: pxH } = getCanvasPixelSize(canvasSize);
   const scaledW = Math.round(pxW * zoom);
@@ -102,7 +127,6 @@ const MenuPreviewCanvas = forwardRef<HTMLDivElement>(function MenuPreviewCanvas(
                 }}
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
               />
-
               <motion.span
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
@@ -111,28 +135,17 @@ const MenuPreviewCanvas = forwardRef<HTMLDivElement>(function MenuPreviewCanvas(
               >
                 🍸
               </motion.span>
-
-              <h2
-                className="mb-2 text-lg font-semibold"
-                style={{ color: theme.textColor }}
-              >
+              <h2 className="mb-2 text-lg font-semibold" style={{ color: theme.textColor }}>
                 Select a Category to Begin
               </h2>
-
-              <p
-                className="mb-6 max-w-xs text-sm"
-                style={{ color: "rgba(161,161,170,1)" }}
-              >
-                Choose from Cocktails, Wine, Coffee and more in the sidebar
+              <p className="mb-6 max-w-xs text-sm" style={{ color: "rgba(80,80,80,1)" }}>
+                Choose from Cocktails or Mocktails in the sidebar
               </p>
-
               <button
                 type="button"
                 onClick={() => setActiveSidebarSection("Categories")}
                 className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-                style={{
-                  background: "linear-gradient(135deg, #7c3aed, #a78bfa)",
-                }}
+                style={{ background: "linear-gradient(135deg, #7c3aed, #a78bfa)" }}
               >
                 <ArrowLeft className="size-4" />
                 Open Categories
@@ -145,66 +158,76 @@ const MenuPreviewCanvas = forwardRef<HTMLDivElement>(function MenuPreviewCanvas(
   }
 
   return (
-    <div className="flex h-full overflow-auto p-8">
-      <div
-        className="m-auto shrink-0"
-        style={{ width: scaledW, height: scaledH, position: "relative" }}
-      >
+    <div className="flex h-full flex-col">
+      <div className="flex flex-1 overflow-hidden p-8">
         <div
-          style={{
-            width: pxW,
-            height: pxH,
-            position: "absolute",
-            top: 0,
-            left: 0,
-            transform: `scale(${zoom})`,
-            transformOrigin: "top left",
-            overflow: "hidden",
-            boxShadow: "0 20px 60px -10px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.1)",
-          }}
+          className="m-auto shrink-0"
+          style={{ width: scaledW, height: scaledH, position: "relative" }}
         >
           <div
-            className="relative h-full overflow-y-auto"
+            style={{
+              width: pxW,
+              height: pxH,
+              position: "absolute",
+              top: 0,
+              left: 0,
+              transform: `scale(${zoom})`,
+              transformOrigin: "top left",
+              overflow: "hidden",
+              boxShadow: "0 20px 60px -10px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.08)",
+            }}
           >
-            <div ref={ref} id="menu-preview-content" className="relative min-h-full" style={{ backgroundColor: theme.backgroundColor }}>
-              <div
-                className="pointer-events-none absolute inset-0 z-0"
-                style={{
-                  filter: `blur(${background.full.blur}px) brightness(${background.full.brightness})`,
-                  ...fullBgStyle,
-                  backgroundAttachment: "fixed",
-                }}
-              />
+            <div className="relative h-full overflow-y-auto">
+              <div ref={ref} id="menu-preview-content" className="relative min-h-full" style={{ backgroundColor: theme.backgroundColor }}>
+                <div
+                  className="pointer-events-none absolute inset-0 z-0"
+                  style={{
+                    filter: `blur(${background.full.blur}px) brightness(${background.full.brightness})`,
+                    ...fullBgStyle,
+                    backgroundAttachment: "fixed",
+                  }}
+                />
+                <div
+                  className="pointer-events-none absolute inset-0 z-0"
+                  style={{
+                    filter: `blur(${background.middle.blur}px) brightness(${background.middle.brightness})`,
+                    ...middleBgStyle,
+                  }}
+                />
+                <div className="relative z-10">
+                  {showHeader && <MenuHeader />}
 
-              <div
-                className="pointer-events-none absolute inset-0 z-0"
-                style={{
-                  filter: `blur(${background.middle.blur}px) brightness(${background.middle.brightness})`,
-                  ...middleBgStyle,
-                }}
-              />
+                  {currentPageData && (
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={`${activeLayout}-${safeCurrentPage}`}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <LayoutComponent
+                          items={currentPageData.items}
+                          showCategoryHeader={currentPageData.showCategoryHeader}
+                          categoryId={currentPageData.categoryId}
+                        />
+                      </motion.div>
+                    </AnimatePresence>
+                  )}
 
-              <div className="relative z-10">
-                <MenuHeader />
-
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={`${activeLayout}-${filteredItems.length}`}
-                    initial={{ opacity: 0, scale: 0.99 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.99 }}
-                    transition={{ duration: 0.25, ease: "easeOut" }}
-                  >
-                    <LayoutComponent items={filteredItems} />
-                  </motion.div>
-                </AnimatePresence>
-
-                {showFooter && <MenuFooter />}
+                  {showFooter && <MenuFooter />}
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      <PageNavigation
+        currentPage={safeCurrentPage}
+        totalPages={totalPages}
+        onNavigate={setCurrentPage}
+      />
     </div>
   );
 });

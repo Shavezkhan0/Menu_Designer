@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { exportAsPng, exportAsPdf, exportAsHtml } from "@/lib/export";
+import { exportAsPngZip, exportAsPdf, exportAsHtml, exportCurrentPageAsPng, exportCurrentPageAsPdf, exportCurrentPageAsHtml } from "@/lib/export";
 import {
   ArrowLeft,
   Download,
@@ -12,7 +12,8 @@ import {
 } from "lucide-react";
 import LeftSidebar from "@/components/menu-designer/LeftSidebar/LeftSidebar";
 import MenuPreviewCanvas from "@/components/menu-designer/MenuPreview/MenuPreviewCanvas";
-import { useMenuDesigner } from "@/hooks/useMenuDesigner";
+import { useMenuDesigner, getCanvasPixelSize } from "@/hooks/useMenuDesigner";
+import { MENU_ITEMS } from "@/data/menuData";
 
 const FONT_LINKS: Record<string, string> = {
   "Playfair Display, serif": "Playfair+Display:wght@400;500;600;700",
@@ -23,7 +24,7 @@ const FONT_LINKS: Record<string, string> = {
 };
 
 export default function MenuDesignerShell() {
-  const { zoom, setZoom, theme, isAIPanelOpen, setIsAIPanelOpen } =
+  const { zoom, setZoom, theme, isAIPanelOpen, setIsAIPanelOpen, selectedCategories, selectedItemIds, activeLayout, showCategoryNames, canvasSize } =
     useMenuDesigner();
   const [loaded, setLoaded] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
@@ -39,9 +40,19 @@ export default function MenuDesignerShell() {
     }
     setExporting(true);
     try {
-      if (type === "png") await exportAsPng(el);
-      else if (type === "pdf") await exportAsPdf(el);
-      else exportAsHtml(el);
+      const hasSelectedItems = selectedItemIds.length > 0;
+      const items =
+        selectedCategories.length > 0
+          ? MENU_ITEMS.filter((item) => selectedCategories.includes(item.category))
+          : hasSelectedItems
+            ? MENU_ITEMS.filter((item) => selectedItemIds.includes(item.id))
+            : MENU_ITEMS;
+      const { width: pageWidth, height: pageHeight } = getCanvasPixelSize(canvasSize);
+      const exportOptions = { items, layout: activeLayout, showCategoryNames, pageWidth, pageHeight };
+
+      if (type === "png") await exportAsPngZip(exportOptions);
+      else if (type === "pdf") await exportAsPdf(exportOptions);
+      else exportAsHtml(exportOptions);
     } catch (err) {
       console.error("Export failed:", err);
       alert("Export failed. Check the console for details.");
@@ -273,9 +284,7 @@ export default function MenuDesignerShell() {
                 className="flex flex-1 flex-col overflow-hidden"
                 style={{ backgroundColor: "#27272a" }}
               >
-                <div className="flex-1 overflow-auto">
-                  <MenuPreviewCanvas ref={canvasRef} />
-                </div>
+                <MenuPreviewCanvas ref={canvasRef} />
               </main>
             </div>
           </motion.div>

@@ -10,6 +10,7 @@ import {
   Sparkles,
   FileText,
   ListEnd,
+  PanelTop,
   ChevronDown,
 } from "lucide-react";
 import { useMenuDesigner } from "@/hooks/useMenuDesigner";
@@ -17,6 +18,7 @@ import CategorySelector from "./CategorySelector";
 import LayoutSelector from "./LayoutSelector";
 import BrandingPanel from "./BrandingPanel";
 import BackgroundPanel from "./BackgroundPanel";
+import HeaderPanel from "./HeaderPanel";
 import FooterPanel from "./FooterPanel";
 import AIAssistant from "./AIAssistant";
 import DocumentPanel from "./DocumentPanel";
@@ -34,6 +36,7 @@ const SECTIONS: SectionDef[] = [
   { id: "Layout", label: "Layout", icon: Layers, component: <LayoutSelector /> },
   { id: "Branding", label: "Branding", icon: Palette, component: <BrandingPanel /> },
   { id: "Background", label: "Background", icon: Image, component: <BackgroundPanel /> },
+  { id: "Header", label: "Header Settings", icon: PanelTop, component: <HeaderPanel /> },
   { id: "Footer", label: "Footer Settings", icon: ListEnd, component: <FooterPanel /> },
   { id: "AI Tools", label: "AI Tools", icon: Sparkles, component: <AIAssistant /> },
 ];

@@ -1,36 +1,28 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useMenuDesigner } from "@/hooks/useMenuDesigner";
 import CategoryHeader from "@/components/menu-designer/MenuPreview/CategoryHeader";
 import type { MenuItem } from "@/data/menuData";
-import { groupItemsByCategory } from "@/data/menuData";
+import { useMenuDesigner, type PageLayoutProps } from "@/hooks/useMenuDesigner";
 
-interface Props {
-  items: MenuItem[];
-}
-
-export default function CardLayout({ items }: Props) {
-  const { theme, showCategoryNames, setSelectedItemId } = useMenuDesigner();
-  const groups = groupItemsByCategory(items);
+export default function CardLayout({ items, showCategoryHeader, categoryId }: PageLayoutProps) {
+  const { theme, setSelectedItemId } = useMenuDesigner();
 
   const renderItem = (item: MenuItem, i: number) => {
-    const isSelected = false;
-
     const bgColor =
       theme.cardStyle === "glass"
-        ? "rgba(255,255,255,0.04)"
+        ? "rgba(0,0,0,0.03)"
         : theme.cardStyle === "solid"
-          ? "rgba(24,24,27,1)"
+          ? "rgba(245,245,245,1)"
           : "transparent";
 
     const borderColor =
       theme.cardStyle === "glass"
-        ? "rgba(255,255,255,0.08)"
+        ? "rgba(0,0,0,0.08)"
         : theme.cardStyle === "solid"
-          ? "rgba(255,255,255,0.06)"
+          ? "rgba(0,0,0,0.06)"
           : theme.cardStyle === "bordered"
-            ? "rgba(255,255,255,0.12)"
+            ? "rgba(0,0,0,0.12)"
             : "transparent";
 
     const borderStyle = theme.cardStyle === "minimal" ? "none" : `1px solid ${borderColor}`;
@@ -38,9 +30,9 @@ export default function CardLayout({ items }: Props) {
     return (
       <motion.div
         key={item.id}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, delay: i * 0.05, ease: "easeOut" }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3, delay: i * 0.04 }}
         whileHover={{ y: -4 }}
         onClick={() => setSelectedItemId(item.id)}
         className="group cursor-pointer overflow-hidden"
@@ -48,13 +40,9 @@ export default function CardLayout({ items }: Props) {
           borderRadius: "16px",
           background: bgColor,
           border: borderStyle,
-          boxShadow: isSelected
-            ? `0 0 0 2px ${theme.primaryColor}`
-            : "0 8px 24px rgba(0,0,0,0.3)",
-          backdropFilter: theme.cardStyle === "glass" ? "blur(12px)" : "none",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
         }}
       >
-        {/* Image header */}
         {item.image && (
           <div className="overflow-hidden">
             <img
@@ -64,8 +52,6 @@ export default function CardLayout({ items }: Props) {
             />
           </div>
         )}
-
-        {/* Content */}
         <div className="p-5">
           <div className="mb-2 flex items-start justify-between gap-3">
             <h3
@@ -81,17 +67,15 @@ export default function CardLayout({ items }: Props) {
               Rs. {item.price.toFixed(2)}
             </span>
           </div>
-
           {item.description && (
             <p
               className="mb-3 line-clamp-2 text-sm leading-relaxed"
-              style={{ color: "rgba(161,161,170,1)" }}
+              style={{ color: theme.subheadingColor }}
             >
               {item.description}
             </p>
           )}
-
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px]" style={{ color: "rgba(113,113,122,1)" }}>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px]" style={{ color: "rgba(80,80,80,1)" }}>
             {item.isNew && (
               <span
                 className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
@@ -108,20 +92,13 @@ export default function CardLayout({ items }: Props) {
                 ★ Signature
               </span>
             )}
-            {item.alcoholContent && (
-              <span className="font-mono">{item.alcoholContent}</span>
-            )}
-            {item.servingStyle && (
-              <span>{item.servingStyle}</span>
-            )}
+            {item.alcoholContent && <span className="font-mono">{item.alcoholContent}</span>}
+            {item.servingStyle && <span>{item.servingStyle}</span>}
             {item.tags.slice(0, 2).map((tag) => (
               <span
                 key={tag}
                 className="rounded-full px-1.5 py-0.5 text-[10px]"
-                style={{
-                  backgroundColor: "rgba(255,255,255,0.04)",
-                  border: "1px solid rgba(255,255,255,0.06)",
-                }}
+                style={{ backgroundColor: "rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.06)" }}
               >
                 {tag}
               </span>
@@ -136,22 +113,11 @@ export default function CardLayout({ items }: Props) {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="mx-auto max-w-2xl space-y-10 px-6 py-8"
+      transition={{ duration: 0.25 }}
+      className="mx-auto max-w-2xl space-y-6 px-6 py-8"
     >
-      {showCategoryNames ? (
-        groups.map((group) => (
-          <section key={group.category.id}>
-            <CategoryHeader categoryId={group.category.id} />
-            <div className="space-y-6">
-              {group.items.map((item, i) => renderItem(item, i))}
-            </div>
-          </section>
-        ))
-      ) : (
-        <div className="space-y-6">
-          {items.map((item, i) => renderItem(item, i))}
-        </div>
-      )}
+      {showCategoryHeader && categoryId && <CategoryHeader categoryId={categoryId} />}
+      {items.map((item, i) => renderItem(item, i))}
     </motion.div>
   );
 }

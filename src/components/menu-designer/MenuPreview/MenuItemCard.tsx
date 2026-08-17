@@ -25,19 +25,19 @@ export default function MenuItemCard({ item, index, onSelect }: Props) {
   const bgColor = isSelected
     ? "rgba(167,139,250,0.08)"
     : theme.cardStyle === "glass"
-      ? "rgba(255,255,255,0.04)"
+      ? "rgba(0,0,0,0.03)"
       : theme.cardStyle === "solid"
-        ? "rgba(24,24,27,1)"
+        ? "rgba(245,245,245,1)"
         : "transparent";
 
   const borderColor = isSelected
     ? theme.primaryColor
     : theme.cardStyle === "glass"
-      ? "rgba(255,255,255,0.08)"
+      ? "rgba(0,0,0,0.08)"
       : theme.cardStyle === "solid"
-        ? "rgba(255,255,255,0.06)"
+        ? "rgba(0,0,0,0.06)"
         : theme.cardStyle === "bordered"
-          ? "rgba(255,255,255,0.12)"
+          ? "rgba(0,0,0,0.12)"
           : "transparent";
 
   const borderStyle = theme.cardStyle === "minimal" ? "none" : `1px solid ${borderColor}`;
@@ -127,13 +127,13 @@ export default function MenuItemCard({ item, index, onSelect }: Props) {
       {/* Description */}
       <p
         className="mb-2 line-clamp-2 text-sm leading-relaxed"
-        style={{ color: "rgba(161,161,170,1)" }}
+        style={{ color: theme.subheadingColor }}
       >
         {item.description}
       </p>
 
       {/* Bottom metadata */}
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px]" style={{ color: "rgba(113,113,122,1)" }}>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px]" style={{ color: "rgba(80,80,80,1)" }}>
         {item.alcoholContent && (
           <span className="font-mono">{item.alcoholContent}</span>
         )}
@@ -145,8 +145,8 @@ export default function MenuItemCard({ item, index, onSelect }: Props) {
             key={tag}
             className="rounded-full px-1.5 py-0.5 text-[10px]"
             style={{
-              backgroundColor: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.06)",
+              backgroundColor: "rgba(0,0,0,0.04)",
+              border: "1px solid rgba(0,0,0,0.06)",
             }}
           >
             {tag}
