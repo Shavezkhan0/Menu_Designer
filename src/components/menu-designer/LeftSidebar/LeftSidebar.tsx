@@ -31,7 +31,7 @@ interface SectionDef {
 }
 
 const SECTIONS: SectionDef[] = [
-  { id: "Document", label: "Document", icon: FileText, component: <DocumentPanel /> },
+  { id: "Document", label: "Page Size", icon: FileText, component: <DocumentPanel /> },
   { id: "Categories", label: "Categories", icon: LayoutGrid, component: <CategorySelector /> },
   { id: "Layout", label: "Layout", icon: Layers, component: <LayoutSelector /> },
   { id: "Branding", label: "Branding", icon: Palette, component: <BrandingPanel /> },

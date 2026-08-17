@@ -9,121 +9,68 @@ interface LayoutOption {
   thumbnail: React.ReactNode;
 }
 
-const bar = (w: string, x: number, y: number, h = 3) => (
-  <rect
-    x={x}
-    y={y}
-    width={w}
-    height={h}
-    rx={1.5}
-    fill="currentColor"
-    opacity={0.6}
-  />
-);
-
 const LAYOUTS: LayoutOption[] = [
   {
-    id: "single-column",
-    label: "Single Column",
+    id: "vertical-grid",
+    label: "Vertical Grid",
     thumbnail: (
       <svg viewBox="0 0 60 60" className="h-full w-full" fill="none">
-        {bar("40", 10, 12, 4)}
-        {bar("36", 10, 22, 4)}
-        {bar("38", 10, 32, 4)}
-        {bar("34", 10, 42, 4)}
+        <rect x={8} y={6} width={20} height={20} rx={3} stroke="currentColor" strokeWidth={1.5} fill="currentColor" fillOpacity={0.08} opacity={0.6} />
+        <rect x={32} y={6} width={20} height={20} rx={3} stroke="currentColor" strokeWidth={1.5} fill="currentColor" fillOpacity={0.08} opacity={0.6} />
+        <rect x={12} y={28} width={12} height={2.5} rx={1} fill="currentColor" opacity={0.7} />
+        <rect x={36} y={28} width={12} height={2.5} rx={1} fill="currentColor" opacity={0.7} />
+        <rect x={14} y={33} width={8} height={2} rx={1} fill="currentColor" opacity={0.35} />
+        <rect x={38} y={33} width={8} height={2} rx={1} fill="currentColor" opacity={0.35} />
+        <rect x={8} y={40} width={20} height={20} rx={3} stroke="currentColor" strokeWidth={1.5} fill="currentColor" fillOpacity={0.08} opacity={0.6} />
+        <rect x={32} y={40} width={20} height={20} rx={3} stroke="currentColor" strokeWidth={1.5} fill="currentColor" fillOpacity={0.08} opacity={0.6} />
       </svg>
     ),
   },
   {
-    id: "two-column",
-    label: "Two Column",
+    id: "horizontal-row",
+    label: "Horizontal Row",
     thumbnail: (
       <svg viewBox="0 0 60 60" className="h-full w-full" fill="none">
-        {bar("18", 10, 8, 4)}
-        {bar("18", 32, 8, 4)}
-        {bar("18", 10, 18, 4)}
-        {bar("18", 32, 18, 4)}
-        {bar("18", 10, 28, 4)}
-        {bar("18", 32, 28, 4)}
-        {bar("18", 10, 38, 4)}
-        {bar("18", 32, 38, 4)}
+        <rect x={6} y={6} width={16} height={16} rx={2} stroke="currentColor" strokeWidth={1.5} fill="currentColor" fillOpacity={0.1} opacity={0.6} />
+        <rect x={26} y={10} width={28} height={2.5} rx={1} fill="currentColor" opacity={0.7} />
+        <rect x={26} y={16} width={20} height={2} rx={1} fill="currentColor" opacity={0.35} />
+        <rect x={6} y={28} width={16} height={16} rx={2} stroke="currentColor" strokeWidth={1.5} fill="currentColor" fillOpacity={0.1} opacity={0.6} />
+        <rect x={26} y={32} width={28} height={2.5} rx={1} fill="currentColor" opacity={0.7} />
+        <rect x={26} y={38} width={20} height={2} rx={1} fill="currentColor" opacity={0.35} />
       </svg>
     ),
   },
   {
-    id: "grid",
-    label: "Grid",
+    id: "text-only",
+    label: "Text Only",
     thumbnail: (
       <svg viewBox="0 0 60 60" className="h-full w-full" fill="none">
-        <rect x={8} y={8} width={20} height={20} rx={2} stroke="currentColor" strokeWidth={2} fill="none" opacity={0.6} />
-        <rect x={32} y={8} width={20} height={20} rx={2} stroke="currentColor" strokeWidth={2} fill="none" opacity={0.6} />
-        <rect x={8} y={32} width={20} height={20} rx={2} stroke="currentColor" strokeWidth={2} fill="none" opacity={0.6} />
-        <rect x={32} y={32} width={20} height={20} rx={2} stroke="currentColor" strokeWidth={2} fill="none" opacity={0.6} />
+        <rect x={10} y={8} width={16} height={2.5} rx={1} fill="currentColor" opacity={0.7} />
+        <rect x={34} y={8} width={16} height={2.5} rx={1} fill="currentColor" opacity={0.7} />
+        <rect x={12} y={14} width={12} height={2} rx={1} fill="currentColor" opacity={0.35} />
+        <rect x={36} y={14} width={12} height={2} rx={1} fill="currentColor" opacity={0.35} />
+        <rect x={10} y={24} width={16} height={2.5} rx={1} fill="currentColor" opacity={0.7} />
+        <rect x={34} y={24} width={16} height={2.5} rx={1} fill="currentColor" opacity={0.7} />
+        <rect x={12} y={30} width={12} height={2} rx={1} fill="currentColor" opacity={0.35} />
+        <rect x={36} y={30} width={12} height={2} rx={1} fill="currentColor" opacity={0.35} />
+        <rect x={10} y={40} width={16} height={2.5} rx={1} fill="currentColor" opacity={0.7} />
+        <rect x={34} y={40} width={16} height={2.5} rx={1} fill="currentColor" opacity={0.7} />
+        <rect x={12} y={46} width={12} height={2} rx={1} fill="currentColor" opacity={0.35} />
+        <rect x={36} y={46} width={12} height={2} rx={1} fill="currentColor" opacity={0.35} />
       </svg>
     ),
   },
   {
-    id: "card",
-    label: "Card",
+    id: "text-row",
+    label: "Text Row",
     thumbnail: (
       <svg viewBox="0 0 60 60" className="h-full w-full" fill="none">
-        <rect x={16} y={10} width={30} height={22} rx={2} stroke="currentColor" strokeWidth={1.5} fill="currentColor" fillOpacity={0.08} opacity={0.6} />
-        <rect x={14} y={16} width={30} height={22} rx={2} stroke="currentColor" strokeWidth={1.5} fill="currentColor" fillOpacity={0.12} opacity={0.7} />
-        <rect x={12} y={22} width={30} height={22} rx={2} stroke="currentColor" strokeWidth={1.5} fill="currentColor" fillOpacity={0.16} opacity={0.8} />
-      </svg>
-    ),
-  },
-  {
-    id: "premium",
-    label: "Premium",
-    thumbnail: (
-      <svg viewBox="0 0 60 60" className="h-full w-full" fill="none">
-        <rect x={18} y={10} width={24} height={2} rx={1} fill="currentColor" opacity={0.3} />
-        <rect x={12} y={18} width={36} height={6} rx={2} fill="currentColor" opacity={0.5} />
-        <rect x={16} y={28} width={28} height={3} rx={1.5} fill="currentColor" opacity={0.35} />
-        <rect x={14} y={34} width={32} height={3} rx={1.5} fill="currentColor" opacity={0.35} />
-        <rect x={18} y={40} width={24} height={3} rx={1.5} fill="currentColor" opacity={0.35} />
-        <rect x={12} y={47} width={36} height={6} rx={2} fill="currentColor" opacity={0.5} />
-      </svg>
-    ),
-  },
-  {
-    id: "cocktail",
-    label: "Cocktail",
-    thumbnail: (
-      <svg viewBox="0 0 60 60" className="h-full w-full" fill="none">
-        {bar("28", 22, 8, 4)}
-        {bar("16", 12, 18, 4)}
-        {bar("28", 22, 28, 4)}
-        {bar("16", 12, 38, 4)}
-        {bar("28", 22, 48, 4)}
-      </svg>
-    ),
-  },
-  {
-    id: "fine-dining",
-    label: "Fine Dining",
-    thumbnail: (
-      <svg viewBox="0 0 60 60" className="h-full w-full" fill="none">
-        <rect x={25} y={8} width={10} height={2} rx={1} fill="currentColor" opacity={0.3} />
-        <rect x={20} y={14} width={20} height={5} rx={2} fill="currentColor" opacity={0.5} />
-        <rect x={22} y={24} width={16} height={3} rx={1.5} fill="currentColor" opacity={0.35} />
-        <rect x={24} y={30} width={12} height={2} rx={1} fill="currentColor" opacity={0.25} />
-        <rect x={22} y={36} width={16} height={3} rx={1.5} fill="currentColor" opacity={0.35} />
-        <rect x={24} y={42} width={12} height={2} rx={1} fill="currentColor" opacity={0.25} />
-        <rect x={20} y={48} width={20} height={5} rx={2} fill="currentColor" opacity={0.5} />
-      </svg>
-    ),
-  },
-  {
-    id: "smart-grid",
-    label: "Smart Grid",
-    thumbnail: (
-      <svg viewBox="0 0 60 60" className="h-full w-full" fill="none">
-        <rect x={15} y={8} width={30} height={44} rx={2} stroke="currentColor" strokeWidth={1} fill="none" opacity={0.5} />
-        <circle cx={30} cy={20} r={6} fill="currentColor" opacity={0.6} />
-        <rect x={20} y={32} width={20} height={3} rx={1.5} fill="currentColor" opacity={0.7} />
-        <rect x={18} y={38} width={24} height={2} rx={1} fill="currentColor" opacity={0.4} />
+        <rect x={18} y={6} width={24} height={2.5} rx={1} fill="currentColor" opacity={0.7} />
+        <rect x={20} y={12} width={20} height={2} rx={1} fill="currentColor" opacity={0.35} />
+        <rect x={18} y={22} width={24} height={2.5} rx={1} fill="currentColor" opacity={0.7} />
+        <rect x={20} y={28} width={20} height={2} rx={1} fill="currentColor" opacity={0.35} />
+        <rect x={18} y={38} width={24} height={2.5} rx={1} fill="currentColor" opacity={0.7} />
+        <rect x={20} y={44} width={20} height={2} rx={1} fill="currentColor" opacity={0.35} />
       </svg>
     ),
   },

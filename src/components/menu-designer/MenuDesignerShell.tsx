@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { exportAsPngZip, exportAsPdf, exportAsHtml, exportCurrentPageAsPng, exportCurrentPageAsPdf, exportCurrentPageAsHtml } from "@/lib/export";
+import type { MenuExportPayload } from "@/lib/exportPayload";
 import {
   ArrowLeft,
   Download,
@@ -12,8 +12,18 @@ import {
 } from "lucide-react";
 import LeftSidebar from "@/components/menu-designer/LeftSidebar/LeftSidebar";
 import MenuPreviewCanvas from "@/components/menu-designer/MenuPreview/MenuPreviewCanvas";
-import { useMenuDesigner, getCanvasPixelSize } from "@/hooks/useMenuDesigner";
-import { MENU_ITEMS } from "@/data/menuData";
+import { useMenuDesigner } from "@/hooks/useMenuDesigner";
+
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 
 const FONT_LINKS: Record<string, string> = {
   "Playfair Display, serif": "Playfair+Display:wght@400;500;600;700",
@@ -24,7 +34,7 @@ const FONT_LINKS: Record<string, string> = {
 };
 
 export default function MenuDesignerShell() {
-  const { zoom, setZoom, theme, isAIPanelOpen, setIsAIPanelOpen, selectedCategories, selectedItemIds, activeLayout, showCategoryNames, canvasSize } =
+  const { zoom, setZoom, theme, isAIPanelOpen, setIsAIPanelOpen, selectedCategories, selectedItemIds, activeLayout, showCategoryNames, canvasSize, background, menuBorder, showHeader, restaurantInfo, footer } =
     useMenuDesigner();
   const [loaded, setLoaded] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
@@ -32,27 +42,39 @@ export default function MenuDesignerShell() {
   const exportRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  const handleExport = async (type: "png" | "pdf" | "html") => {
-    const el = canvasRef.current;
-    if (!el) {
-      console.warn("Export target element not found");
-      return;
-    }
+  const handleExport = async (type: "png" | "pdf") => {
     setExporting(true);
     try {
       const hasSelectedItems = selectedItemIds.length > 0;
-      const items =
-        selectedCategories.length > 0
-          ? MENU_ITEMS.filter((item) => selectedCategories.includes(item.category))
-          : hasSelectedItems
-            ? MENU_ITEMS.filter((item) => selectedItemIds.includes(item.id))
-            : MENU_ITEMS;
-      const { width: pageWidth, height: pageHeight } = getCanvasPixelSize(canvasSize);
-      const exportOptions = { items, layout: activeLayout, showCategoryNames, pageWidth, pageHeight };
+      if (selectedCategories.length === 0 && !hasSelectedItems) return;
 
-      if (type === "png") await exportAsPngZip(exportOptions);
-      else if (type === "pdf") await exportAsPdf(exportOptions);
-      else exportAsHtml(exportOptions);
+      const payload: MenuExportPayload = {
+        selectedCategories,
+        selectedItemIds,
+        activeLayout,
+        showCategoryNames,
+        canvasSize,
+        theme,
+        background,
+        menuBorder,
+        showHeader,
+        restaurantInfo,
+        footer,
+      };
+
+      const res = await fetch("/api/export", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ format: type, payload }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error ?? `Export failed with status ${res.status}`);
+      }
+
+      const blob = await res.blob();
+      downloadBlob(blob, type === "pdf" ? "menu.pdf" : "menu.png");
     } catch (err) {
       console.error("Export failed:", err);
       alert("Export failed. Check the console for details.");
@@ -85,6 +107,21 @@ export default function MenuDesignerShell() {
     link.setAttribute("data-font", familyKey);
     document.head.appendChild(link);
   }, [theme.fontFamily]);
+
+  // Always load Alex Brush for the footer brand signature — this is a fallback
+  // Google Fonts <link> (absolute URL) separate from next/font's self-hosted
+  // --font-brand-signature variable, so the signature still renders correctly
+  // inside the off-screen export iframe even if the self-hosted font's
+  // relative asset URL fails to resolve there.
+  useEffect(() => {
+    const key = "Alex Brush";
+    if (document.querySelector(`link[data-font="${key}"]`)) return;
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = `https://fonts.googleapis.com/css2?family=Alex+Brush&display=swap`;
+    link.setAttribute("data-font", key);
+    document.head.appendChild(link);
+  }, []);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -247,7 +284,7 @@ export default function MenuDesignerShell() {
                           boxShadow: "0 12px 32px rgba(0,0,0,0.4)",
                         }}
                       >
-                        {(["png", "pdf", "html"] as const).map((type) => (
+                        {(["png", "pdf"] as const).map((type) => (
                           <button
                             key={type}
                             type="button"

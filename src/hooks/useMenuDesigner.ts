@@ -23,23 +23,21 @@ export function getBackgroundImageCss(value: string): string {
 }
 
 export type LayoutStyle =
-  | "single-column"
-  | "two-column"
-  | "grid"
-  | "card"
-  | "premium"
-  | "cocktail"
-  | "fine-dining"
-  | "smart-grid";
+  | "vertical-grid"
+  | "horizontal-row"
+  | "text-only"
+  | "text-row";
 
 export interface RestaurantInfo {
   name: string;
   tagline: string;
   logoUrl: string | null;
-  phone: string;
-  email: string;
-  address: string;
-  website: string;
+}
+
+export interface FooterSettings {
+  showBrandSignature: boolean;
+  brandText: string;
+  brandColor?: string;
 }
 
 export interface ThemeSettings {
@@ -51,7 +49,7 @@ export interface ThemeSettings {
   backgroundColor: string;
   headingColor: string;
   subheadingColor: string;
-  imageShape: "circular" | "rectangle" | "square" | "none" | "blend";
+  imageShape: "rectangle" | "square" | "circular" | "none" | "blend";
 }
 
 export interface MenuBorderSettings {
@@ -66,19 +64,11 @@ export interface MenuBorderSettings {
 
 export type BackgroundType = "color" | "gradient" | "image";
 
-export interface BackgroundLayer {
+export interface BackgroundSettings {
   type: BackgroundType;
   value: string;
   blur: number;
   brightness: number;
-}
-
-export interface BackgroundSettings {
-  top: BackgroundLayer;
-  middle: BackgroundLayer;
-  bottom: BackgroundLayer;
-  full: BackgroundLayer;
-  activeLayer: "top" | "middle" | "bottom" | "full";
 }
 
 export type CanvasPreset = "a4" | "a3" | "a5" | "a6" | "letter" | "custom";
@@ -88,6 +78,8 @@ export interface PageLayoutProps {
   items: MenuItem[];
   showCategoryHeader: boolean;
   categoryId: string | null;
+  startIndex: number;
+  isExport?: boolean;
 }
 
 export interface CanvasSize {
@@ -133,19 +125,15 @@ interface MenuDesignerState {
   activeBrowseCategory: string | null;
   selectedItemIds: string[];
   showCategoryNames: boolean;
-  showTopShadow: boolean;
-  showBottomShadow: boolean;
   showHeader: boolean;
-  showFooter: boolean;
-  currentPage: number;
+  footer: FooterSettings;
   toggleCategory: (id: string) => void;
   setActiveLayout: (layout: LayoutStyle) => void;
   setCanvasSize: (size: CanvasSize) => void;
   setZoom: (zoom: number) => void;
   setRestaurantInfo: (info: Partial<RestaurantInfo>) => void;
   setTheme: (theme: Partial<ThemeSettings>) => void;
-  setBackground: (partial: Partial<BackgroundLayer>) => void;
-  setActiveBackgroundLayer: (layer: "top" | "middle" | "bottom" | "full") => void;
+  setBackground: (partial: Partial<BackgroundSettings>) => void;
   setMenuBorder: (border: Partial<MenuBorderSettings>) => void;
   setSelectedItemId: (id: string | null) => void;
   setActiveSidebarSection: (section: string | null) => void;
@@ -153,20 +141,17 @@ interface MenuDesignerState {
   setActiveBrowseCategory: (id: string | null) => void;
   toggleItem: (id: string) => void;
   setShowCategoryNames: (show: boolean) => void;
-  setShowTopShadow: (show: boolean) => void;
-  setShowBottomShadow: (show: boolean) => void;
   setShowHeader: (show: boolean) => void;
-  setShowFooter: (show: boolean) => void;
-  setCurrentPage: (page: number) => void;
+  setFooter: (partial: Partial<FooterSettings>) => void;
   clearCategoryItems: (categoryId: string, allItems: import("@/data/menuData").MenuItem[]) => void;
 }
 
 export const useMenuDesigner = create<MenuDesignerState>((set) => ({
   selectedCategories: [],
-  activeLayout: "smart-grid",
-  canvasSize: getDefaultCanvasSize("a4"),
+  activeLayout: "vertical-grid",
+  canvasSize: getDefaultCanvasSize("a3"),
   zoom: 1,
-  restaurantInfo: { name: "", tagline: "", logoUrl: null, phone: "", email: "", address: "", website: "" },
+  restaurantInfo: { name: "", tagline: "", logoUrl: null },
   theme: {
     primaryColor: "#a78bfa",
     accentColor: "#f472b6",
@@ -176,15 +161,9 @@ export const useMenuDesigner = create<MenuDesignerState>((set) => ({
     backgroundColor: "#ffffff",
     headingColor: "#1a1a1a",
     subheadingColor: "rgba(60,60,60,0.8)",
-    imageShape: "circular",
+    imageShape: "rectangle",
   },
-  background: {
-    top: { type: "color", value: "transparent", blur: 0, brightness: 1 },
-    middle: { type: "color", value: "transparent", blur: 0, brightness: 1 },
-    bottom: { type: "color", value: "transparent", blur: 0, brightness: 1 },
-    full: { type: "color", value: "transparent", blur: 0, brightness: 1 },
-    activeLayer: "top",
-  },
+  background: { type: "color", value: "transparent", blur: 0, brightness: 1 },
   menuBorder: {
     style: "none",
     color: "#c9a84c",
@@ -200,11 +179,8 @@ export const useMenuDesigner = create<MenuDesignerState>((set) => ({
   activeBrowseCategory: null,
   selectedItemIds: [],
   showCategoryNames: true,
-  showTopShadow: false,
-  showBottomShadow: false,
   showHeader: false,
-  showFooter: false,
-  currentPage: 1,
+  footer: { showBrandSignature: true, brandText: "DeliCocktailHouse" },
   toggleCategory: (id) =>
     set((state) => ({
       selectedCategories: state.selectedCategories.includes(id)
@@ -224,22 +200,12 @@ export const useMenuDesigner = create<MenuDesignerState>((set) => ({
     })),
   setBackground: (partial) =>
     set((state) => {
-      const activeLayer = state.background.activeLayer;
-      const nextLayer = { ...state.background[activeLayer], ...partial };
-      if (nextLayer.type === "image" && nextLayer.value) {
-        nextLayer.value = sanitizeBackgroundImage(nextLayer.value);
+      const next = { ...state.background, ...partial };
+      if (next.type === "image" && next.value) {
+        next.value = sanitizeBackgroundImage(next.value);
       }
-      return {
-        background: {
-          ...state.background,
-          [activeLayer]: nextLayer,
-        },
-      };
+      return { background: next };
     }),
-  setActiveBackgroundLayer: (layer) =>
-    set((state) => ({
-      background: { ...state.background, activeLayer: layer },
-    })),
   setMenuBorder: (partial) =>
     set((state) => ({
       menuBorder: { ...state.menuBorder, ...partial },
@@ -255,11 +221,11 @@ export const useMenuDesigner = create<MenuDesignerState>((set) => ({
         : [...state.selectedItemIds, id],
     })),
   setShowCategoryNames: (show) => set({ showCategoryNames: show }),
-  setShowTopShadow: (show) => set({ showTopShadow: show }),
-  setShowBottomShadow: (show) => set({ showBottomShadow: show }),
   setShowHeader: (show) => set({ showHeader: show }),
-  setShowFooter: (show) => set({ showFooter: show }),
-  setCurrentPage: (page) => set({ currentPage: page }),
+  setFooter: (partial) =>
+    set((state) => ({
+      footer: { ...state.footer, ...partial },
+    })),
   clearCategoryItems: (categoryId, allItems) =>
     set((state) => {
       const idsToRemove = allItems

@@ -9,9 +9,10 @@ interface Props {
   item: MenuItem;
   index: number;
   onSelect: () => void;
+  isExport?: boolean;
 }
 
-export default function MenuItemCard({ item, index, onSelect }: Props) {
+export default function MenuItemCard({ item, index, onSelect, isExport }: Props) {
   const { theme, selectedItemId, setSelectedItemId, setActiveSidebarSection } =
     useMenuDesigner();
   const isSelected = selectedItemId === item.id;
@@ -44,7 +45,7 @@ export default function MenuItemCard({ item, index, onSelect }: Props) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={isExport ? false : { opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay: index * 0.05, ease: "easeOut" }}
       whileHover={{ y: -3 }}
@@ -94,7 +95,7 @@ export default function MenuItemCard({ item, index, onSelect }: Props) {
             color: theme.primaryColor,
           }}
         >
-          Rs. {item.price.toFixed(2)}
+          {item.price != null && `Rs. ${item.price.toFixed(2)}`}
         </span>
       </div>
 
@@ -140,7 +141,7 @@ export default function MenuItemCard({ item, index, onSelect }: Props) {
         {item.servingStyle && (
           <span>{item.servingStyle}</span>
         )}
-        {item.tags.slice(0, 3).map((tag) => (
+        {item.tags?.slice(0, 3).map((tag) => (
           <span
             key={tag}
             className="rounded-full px-1.5 py-0.5 text-[10px]"

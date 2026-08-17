@@ -60,37 +60,32 @@ Without an API key, the text generation endpoint returns simulated fallback cont
 ## Features
 
 ### Sidebar Controls
-- **Document** — canvas size presets (A3, A4, A5, A6, US Letter, Custom) with unit support (px / mm / in).
+- **Document** — canvas size presets (A3, A4, A5, A6, US Letter, Custom) with unit support (px / mm / in). **Default: A3**.
 - **Categories** — two-phase drill-down: pick a category (Cocktails or Mocktails), then toggle individual items on/off. Includes a "Show Category Names" toggle.
-- **Layout** — switch between 8 layout styles, each with an SVG thumbnail: Single Column, Two Column, Grid, Card, Premium, Cocktail, Fine Dining, and Smart Grid.
-- **Branding** — restaurant name, tagline, logo upload, primary/accent color pickers, font selector (5 Google Fonts), card style (glass / solid / minimal / bordered), heading/subheading color pickers, and image shape (circular / rectangle / square / none / blend).
-- **Background** — per-layer background control (Top / Middle / Bottom / Full) with 3 modes:
-  - **Color** — hex input + 6 preset swatches.
-  - **Gradient** — 6 named presets (Midnight, Deep Ocean, Velvet, Ember, Forest, Rose).
-  - **Image** — upload or generate with AI, with per-layer blur and brightness sliders.
-  - Toggle **Top Shadow** and **Bottom Shadow** gradient overlays.
-  - **Menu Border** — style (none / solid / double / dashed / dotted / gold-frame), color, size, offset, and padding (rendered in Smart Grid layout only).
-- **Footer Settings** — toggle the footer on/off and edit the phone, email, address, and website shown in the footer.
+- **Layout** — switch between 4 layout styles (Vertical Grid, Horizontal Row, Text Only, Text Row), each with an SVG thumbnail. **Layout styles were simplified** — 8 legacy layouts were replaced with 4 new responsive layouts; per-layer `CardLayout`, `CocktailLayout`, `FineDiningLayout`, `GridLayout`, `PremiumLayout`, `SmartGridLayout`, `SingleColumnLayout`, `TwoColumnLayout` were removed.
+- **Branding** — restaurant name, tagline, logo upload, primary/accent color pickers, font selector (Geist + Playfair Display + Great Vibes), card style (glass / solid / minimal / bordered), heading/subheading color pickers, and image shape (circular / rectangle / square / none / blend).
+- **Background** — unified single-background control with 3 modes: Color, Gradient, Image. **Per-layer Top/Middle/Bottom/Full background system was removed**; shadows (Top Shadow / Bottom Shadow) were removed. Blur and brightness sliders apply to the single background layer. Menu border (style/color/size/offset/padding) rendered in Smart Grid layout only.
+- **Footer Settings** — toggle "Show Brand Signature" on/off and edit the brand text ("Deli Cocktail House" by default). The footer now renders as a **script/cursive wordmark** in Great Vibes font with adaptive color (blush pink on dark backgrounds, muted maroon on light backgrounds), replacing the plain-contact-info footer.
 - **AI Tools** — full assistant panel with free-form prompts and 6 quick-action buttons: Write Description, Suggest Names, Restaurant Bio, Premium Style, Generate Theme, Chef's Picks. Apply, Copy, and Regenerate actions on results.
 
 ### Menu Preview
 - Live, zoomable canvas (10%–300%, centered, scrollable when zoomed in).
 - Splash screen with Framer Motion animation on load.
 - Empty state with call-to-action to open Categories.
-- Header with logo, name, and tagline over the top background layer.
-- Stagger-animated menu item cards with badges (Signature, New), prices (Rs.), alcohol content, serving style, garnish, and tags.
+- Header with logo, name, and tagline over the single background.
+- Menu item cards with badges (Signature, New), prices (Rs.), alcohol content, serving style, and tags.
 - Category headers with gold divider lines.
-- Fully customizable footer with contact info, QR placeholder, copyright, and "Generated with Menu Designer" badge.
+- **Footer renders as a script/cursive brand wordmark** (Great Vibes font, adaptive color, no longer plain contact info).
 
 ### AI Integration
 - `POST /api/grok/generate-text` — text generation (descriptions, names, bios, themes, general). Falls back to simulated responses when no API key is set.
-- `POST /api/grok/generate-background` — AI image generation (xAI `grok-2-image`), with a Pollinations.ai fallback.
+- `POST /api/grok/generate-background` — AI image generation (xAI `grok-2-image`), with Pollinations.ai fallback.
 - `POST /api/grok/generate-theme` — structured JSON theme generation (colors, font, card style) with field validation.
-- Dynamic Google Font loading based on the selected theme font.
+- Google Fonts loaded via `next/font/google` (Geist, Inter, Playfair Display, Great Vibes).
 
 ### Export
 Export the current menu via the top-bar **Export** menu:
-- **PNG** — captured at 2x scale via html2canvas-pro.
+- **PNG** — captured at 2x scale via html2canvas-pro, with font loading waited-for before capture.
 - **PDF** — rendered with jsPDF.
 - **HTML** — standalone HTML document.
 
@@ -134,11 +129,10 @@ src/
 │           ├── SingleColumnLayout.tsx
 │           ├── TwoColumnLayout.tsx
 │           ├── GridLayout.tsx
-│           ├── CardLayout.tsx
-│           ├── PremiumLayout.tsx
-│           ├── CocktailLayout.tsx
-│           ├── FineDiningLayout.tsx
-│           └── SmartGridLayout.tsx
+│           ├── TextOnlyLayout.tsx
+│           ├── TextRowLayout.tsx
+│           ├── VerticalGridLayout.tsx
+│           └── HorizontalRowLayout.tsx
 ├── data/
 │   └── menuData.ts                    # Menu categories + items (Cocktails, Mocktails)
 ├── hooks/
@@ -168,8 +162,8 @@ Menu items are defined in `src/data/menuData.ts`. Currently implemented:
 
 | Category | Items |
 |---|---|
-| Cocktails | 13 items |
-| Mocktails | 12 items |
+| Cocktails | 90 items |
+| Mocktails | 51 items |
 
 Each item includes: name, description, price, image path, and optional fields (badges, alcohol content, serving style, garnish, tags).
 

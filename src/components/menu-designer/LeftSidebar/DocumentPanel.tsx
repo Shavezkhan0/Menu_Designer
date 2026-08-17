@@ -36,6 +36,12 @@ export default function DocumentPanel() {
 
   return (
     <div className="space-y-3 px-4 pb-4">
+      <p
+        className="text-[10px] font-medium uppercase tracking-wider"
+        style={{ color: "rgba(113,113,122,1)" }}
+      >
+        Page Size
+      </p>
       <div className="grid grid-cols-2 gap-1.5">
         {PRESETS.map(({ value, label }) => (
           <button

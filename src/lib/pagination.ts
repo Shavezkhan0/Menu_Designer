@@ -7,17 +7,14 @@ export type MenuPage = {
   categoryId: string | null;
   showCategoryHeader: boolean;
   items: MenuItem[];
+  startItemIndex: number;
 };
 
 export const ITEMS_PER_PAGE: Record<LayoutStyle, number> = {
-  "single-column": 5,
-  "two-column": 10,
-  grid: 12,
-  card: 4,
-  premium: 5,
-  cocktail: 6,
-  "fine-dining": 5,
-  "smart-grid": 8,
+  "vertical-grid": 8,
+  "horizontal-row": 5,
+  "text-only": 10,
+  "text-row": 6,
 };
 
 function chunk<T>(arr: T[], size: number): T[][] {
@@ -38,19 +35,23 @@ export function computeMenuPages(
   const perPage = options.itemsPerPageOverride ?? ITEMS_PER_PAGE[layout];
   const pages: MenuPage[] = [];
   let pageNumber = 1;
+  let runningIndex = 0;
 
   if (options.showCategoryNames) {
-    const groups = groupItemsByCategory(items);
+    const groups = groupItemsByCategory(items).filter((g) => g.items.length > 0);
 
     for (const group of groups) {
       const chunks = chunk(group.items, perPage);
 
       for (let i = 0; i < chunks.length; i++) {
+        const startIdx = runningIndex;
+        runningIndex += chunks[i].length;
         pages.push({
           pageNumber,
           categoryId: i === 0 ? group.category.id : null,
           showCategoryHeader: i === 0,
           items: chunks[i],
+          startItemIndex: startIdx,
         });
         pageNumber++;
       }
@@ -59,11 +60,14 @@ export function computeMenuPages(
     const chunks = chunk(items, perPage);
 
     for (let i = 0; i < chunks.length; i++) {
+      const startIdx = runningIndex;
+      runningIndex += chunks[i].length;
       pages.push({
         pageNumber,
         categoryId: null,
         showCategoryHeader: false,
         items: chunks[i],
+        startItemIndex: startIdx,
       });
       pageNumber++;
     }

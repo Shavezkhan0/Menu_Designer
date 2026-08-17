@@ -229,7 +229,7 @@ export default function CategorySelector() {
                           className="shrink-0 text-[11px] font-semibold"
                           style={{ color: "#a78bfa" }}
                         >
-                          Rs. {item.price.toFixed(2)}
+                          {item.price != null && `Rs. ${item.price.toFixed(2)}`}
                         </span>
                       </div>
                       <p

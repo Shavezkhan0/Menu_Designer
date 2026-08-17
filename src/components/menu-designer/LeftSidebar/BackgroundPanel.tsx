@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { motion } from "framer-motion";
 import { Upload, Sparkles, Loader2 } from "lucide-react";
 import { useMenuDesigner, type BackgroundType, type MenuBorderSettings } from "@/hooks/useMenuDesigner";
 
@@ -30,8 +29,7 @@ const BG_TABS: { id: BackgroundType; label: string }[] = [
 ];
 
 export default function BackgroundPanel() {
-  const { background, setBackground, setActiveBackgroundLayer, menuBorder, setMenuBorder, showTopShadow, setShowTopShadow, showBottomShadow, setShowBottomShadow } = useMenuDesigner();
-  const activeLayerConfig = background[background.activeLayer];
+  const { background, setBackground, menuBorder, setMenuBorder } = useMenuDesigner();
   const colorInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const borderColorRef = useRef<HTMLInputElement>(null);
@@ -77,43 +75,6 @@ export default function BackgroundPanel() {
 
   return (
     <div className="px-4 py-5">
-      {/* Target Layer Selector */}
-      <p
-        className="mb-2 text-[11px] font-medium tracking-[0.1em]"
-        style={{ color: "rgba(113,113,122,1)" }}
-      >
-        TARGET LAYER
-      </p>
-      <div className="relative mb-6 flex gap-0.5 rounded-lg p-0.5" style={{ backgroundColor: "rgba(24,24,27,1)" }}>
-        {["top", "middle", "bottom", "full"].map((layer) => (
-          <button
-            key={layer}
-            type="button"
-            onClick={() => setActiveBackgroundLayer(layer as any)}
-            className="relative z-10 flex-1 rounded-md px-2 py-1.5 text-[10px] font-medium transition-colors uppercase"
-            style={{
-              color: background.activeLayer === layer ? "rgba(244,244,245,1)" : "rgba(113,113,122,1)",
-            }}
-          >
-            {background.activeLayer === layer && (
-              <motion.div
-                layoutId="bg-layer-indicator"
-                className="absolute inset-0 rounded-md"
-                style={{ backgroundColor: "rgba(39,39,42,1)" }}
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              />
-            )}
-            <span className="relative z-10">{layer}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Separator */}
-      <div
-        className="my-4"
-        style={{ height: "1px", backgroundColor: "rgba(255,255,255,0.04)" }}
-      />
-
       {/* Background Type Tabs */}
       <p
         className="mb-2 text-[11px] font-medium tracking-[0.1em]"
@@ -129,15 +90,13 @@ export default function BackgroundPanel() {
             onClick={() => setBackground({ type: tab.id })}
             className="relative z-10 flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors"
             style={{
-              color: activeLayerConfig.type === tab.id ? "rgba(244,244,245,1)" : "rgba(113,113,122,1)",
+              color: background.type === tab.id ? "rgba(244,244,245,1)" : "rgba(113,113,122,1)",
             }}
           >
-            {activeLayerConfig.type === tab.id && (
-              <motion.div
-                layoutId="bg-tab-indicator"
+            {background.type === tab.id && (
+              <span
                 className="absolute inset-0 rounded-md"
                 style={{ backgroundColor: "rgba(39,39,42,1)" }}
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
               />
             )}
             <span className="relative z-10">{tab.label}</span>
@@ -146,25 +105,25 @@ export default function BackgroundPanel() {
       </div>
 
       {/* Color Mode */}
-      {activeLayerConfig.type === "color" && (
+      {background.type === "color" && (
         <>
           <div className="mb-3 flex items-center gap-2">
             <button
               type="button"
               onClick={() => colorInputRef.current?.click()}
               className="size-9 shrink-0 rounded-lg transition-transform hover:scale-110"
-              style={{ backgroundColor: activeLayerConfig.value }}
+              style={{ backgroundColor: background.value }}
             />
             <input
               ref={colorInputRef}
               type="color"
-              value={activeLayerConfig.value}
+              value={background.value}
               onChange={(e) => setBackground({ value: e.target.value })}
               className="hidden"
             />
             <input
               type="text"
-              value={activeLayerConfig.value}
+              value={background.value}
               onChange={(e) => setBackground({ value: e.target.value })}
               className="w-full rounded-lg px-3 py-2 text-xs font-mono outline-none"
               style={{
@@ -185,7 +144,7 @@ export default function BackgroundPanel() {
                 className="size-7 rounded-lg transition-transform hover:scale-110"
                 style={{
                   backgroundColor: preset,
-                  boxShadow: activeLayerConfig.value === preset ? "0 0 0 2px rgba(24,24,27,1), 0 0 0 4px rgba(63,63,70,1)" : "none",
+                  boxShadow: background.value === preset ? "0 0 0 2px rgba(24,24,27,1), 0 0 0 4px rgba(63,63,70,1)" : "none",
                   outlineOffset: 2,
                 }}
               />
@@ -195,7 +154,7 @@ export default function BackgroundPanel() {
       )}
 
       {/* Gradient Mode */}
-      {activeLayerConfig.type === "gradient" && (
+      {background.type === "gradient" && (
         <div className="flex flex-wrap gap-2">
           {GRADIENT_PRESETS.map((g) => (
             <button
@@ -205,11 +164,11 @@ export default function BackgroundPanel() {
               className="flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium transition-all"
               style={{
                 background: g.value,
-                border: activeLayerConfig.value === g.value
+                border: background.value === g.value
                   ? "1.5px solid #a78bfa"
                   : "1.5px solid rgba(255,255,255,0.06)",
                 color: "rgba(244,244,245,0.9)",
-                outline: activeLayerConfig.value === g.value ? "2px solid rgba(167,139,250,0.3)" : "none",
+                outline: background.value === g.value ? "2px solid rgba(167,139,250,0.3)" : "none",
                 outlineOffset: -1,
               }}
             >
@@ -220,7 +179,7 @@ export default function BackgroundPanel() {
       )}
 
       {/* Image Mode */}
-      {activeLayerConfig.type === "image" && (
+      {background.type === "image" && (
         <>
           <input
             ref={imageInputRef}
@@ -229,10 +188,10 @@ export default function BackgroundPanel() {
             className="hidden"
             onChange={handleImageUpload}
           />
-          {activeLayerConfig.value ? (
+          {background.value ? (
             <div className="relative mb-3">
               <img
-                src={activeLayerConfig.value}
+                src={background.value}
                 alt="Background preview"
                 className="h-20 w-full rounded-xl object-cover"
               />
@@ -321,7 +280,7 @@ export default function BackgroundPanel() {
       )}
 
       {/* Adjustments */}
-      {(activeLayerConfig.type === "image" || activeLayerConfig.type === "gradient" || activeLayerConfig.type === "color") && (
+      {(background.type === "image" || background.type === "gradient" || background.type === "color") && (
         <div className="mt-8 space-y-6">
           <p
             className="mb-2 text-[11px] font-medium tracking-[0.1em]"
@@ -336,7 +295,7 @@ export default function BackgroundPanel() {
                 Blur
               </label>
               <span className="text-xs" style={{ color: "rgba(113,113,122,1)" }}>
-                {activeLayerConfig.blur}px
+                {background.blur}px
               </span>
             </div>
             <input
@@ -344,14 +303,14 @@ export default function BackgroundPanel() {
               min="0"
               max="20"
               step="1"
-              value={activeLayerConfig.blur}
+              value={background.blur}
               onChange={(e) => setBackground({ blur: Number(e.target.value) })}
               className="w-full cursor-pointer"
               style={{
                 accentColor: "#a78bfa",
                 height: 4,
                 borderRadius: 2,
-                background: `linear-gradient(to right, #a78bfa ${(activeLayerConfig.blur / 20) * 100}%, rgba(63,63,70,1) ${(activeLayerConfig.blur / 20) * 100}%)`,
+                background: `linear-gradient(to right, #a78bfa ${(background.blur / 20) * 100}%, rgba(63,63,70,1) ${(background.blur / 20) * 100}%)`,
               }}
             />
           </div>
@@ -362,7 +321,7 @@ export default function BackgroundPanel() {
                 Brightness
               </label>
               <span className="text-xs" style={{ color: "rgba(113,113,122,1)" }}>
-                {Math.round(activeLayerConfig.brightness * 100)}%
+                {Math.round(background.brightness * 100)}%
               </span>
             </div>
             <input
@@ -370,73 +329,19 @@ export default function BackgroundPanel() {
               min="0"
               max="2"
               step="0.1"
-              value={activeLayerConfig.brightness}
+              value={background.brightness}
               onChange={(e) => setBackground({ brightness: Number(e.target.value) })}
               className="w-full cursor-pointer"
               style={{
                 accentColor: "#a78bfa",
                 height: 4,
                 borderRadius: 2,
-                background: `linear-gradient(to right, #a78bfa ${(activeLayerConfig.brightness / 2) * 100}%, rgba(63,63,70,1) ${(activeLayerConfig.brightness / 2) * 100}%)`,
+                background: `linear-gradient(to right, #a78bfa ${(background.brightness / 2) * 100}%, rgba(63,63,70,1) ${(background.brightness / 2) * 100}%)`,
               }}
             />
           </div>
         </div>
       )}
-
-      {/* Separator */}
-      <div
-        className="my-4"
-        style={{ height: "1px", backgroundColor: "rgba(255,255,255,0.04)" }}
-      />
-
-      {/* ── Shadows ── */}
-      <p
-        className="mb-3 text-[11px] font-medium tracking-[0.1em]"
-        style={{ color: "rgba(113,113,122,1)" }}
-      >
-        SHADOWS
-      </p>
-      {[
-        {
-          label: "Top Shadow",
-          checked: showTopShadow,
-          onChange: setShowTopShadow,
-        },
-        {
-          label: "Bottom Shadow",
-          checked: showBottomShadow,
-          onChange: setShowBottomShadow,
-        },
-      ].map(({ label, checked, onChange }) => (
-        <div
-          key={label}
-          className="mb-2 flex items-center justify-between rounded-lg px-3 py-2.5"
-          style={{
-            backgroundColor: "rgba(24,24,27,1)",
-            border: "1px solid rgba(63,63,70,1)",
-          }}
-        >
-          <span className="text-xs font-medium" style={{ color: "rgba(161,161,170,1)" }}>
-            {label}
-          </span>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={checked}
-            onClick={() => onChange(!checked)}
-            className="relative h-5 w-9 rounded-full transition-colors"
-            style={{
-              backgroundColor: checked ? "#a78bfa" : "rgba(63,63,70,1)",
-            }}
-          >
-            <span
-              className="absolute top-0.5 size-4 rounded-full bg-white shadow transition-transform"
-              style={{ left: "2px", transform: checked ? "translateX(16px)" : "translateX(0)" }}
-            />
-          </button>
-        </div>
-      ))}
 
       {/* Separator */}
       <div
