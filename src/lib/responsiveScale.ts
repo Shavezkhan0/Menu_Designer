@@ -40,3 +40,14 @@ export function getResponsiveScale(itemCount: number): number {
 
   return 1.0;
 }
+
+const SPOTLIGHT_SCALE: Record<1 | 2 | 3, number> = {
+  1: 3.4,
+  2: 2.5,
+  3: 2.0,
+};
+
+export function getSpotlightScale(itemCount: number): number {
+  const n = Math.min(3, Math.max(1, itemCount)) as 1 | 2 | 3;
+  return SPOTLIGHT_SCALE[n];
+}

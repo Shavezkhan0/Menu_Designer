@@ -3,6 +3,7 @@ import { MENU_ITEMS } from "@/data/menuData";
 import { computeMenuPages } from "@/lib/pagination";
 import { consumeExportPayload } from "@/lib/exportStore";
 import { isMenuExportPayload } from "@/lib/exportPayload";
+import { isSpotlightMode } from "@/lib/spotlight";
 import MenuPageView from "@/components/menu-designer/MenuPreview/MenuPageView";
 
 export default async function MenuExportPage({
@@ -36,10 +37,14 @@ export default async function MenuExportPage({
         ? MENU_ITEMS.filter((item) => selectedItemIds.includes(item.id))
         : MENU_ITEMS;
 
-  const pages = computeMenuPages(items, activeLayout, {
-    showCategoryNames,
-    itemsPerPageOverride: items.length || undefined,
-  });
+  const isSpotlight = isSpotlightMode(items.length);
+
+  const pages = isSpotlight
+    ? [{ pageNumber: 1, categoryId: null, showCategoryHeader: false, items, startItemIndex: 0 }]
+    : computeMenuPages(items, activeLayout, {
+        showCategoryNames,
+        itemsPerPageOverride: items.length || undefined,
+      });
 
   return (
     <MenuPageView
@@ -53,6 +58,7 @@ export default async function MenuExportPage({
       footer={footer}
       activeLayout={activeLayout}
       isExport
+      isSpotlight={isSpotlight}
     />
   );
 }

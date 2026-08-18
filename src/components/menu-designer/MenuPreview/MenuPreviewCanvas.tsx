@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import { useMenuDesigner, getCanvasPixelSize } from "@/hooks/useMenuDesigner";
 import { MENU_ITEMS } from "@/data/menuData";
 import { computeMenuPages } from "@/lib/pagination";
+import { isSpotlightMode } from "@/lib/spotlight";
 import MenuPageView from "./MenuPageView";
 
 const MenuPreviewCanvas = forwardRef<HTMLDivElement>(function MenuPreviewCanvas(_props, ref) {
@@ -33,14 +34,25 @@ const MenuPreviewCanvas = forwardRef<HTMLDivElement>(function MenuPreviewCanvas(
         ? MENU_ITEMS.filter((item) => selectedItemIds.includes(item.id))
         : MENU_ITEMS;
 
-  const pages = useMemo(
-    () =>
-      computeMenuPages(filteredItems, activeLayout, {
-        showCategoryNames,
-        itemsPerPageOverride: filteredItems.length || undefined,
-      }),
-    [filteredItems, activeLayout, showCategoryNames]
-  );
+  const isSpotlight = isSpotlightMode(filteredItems.length);
+
+  const pages = useMemo(() => {
+    if (isSpotlight) {
+      return [
+        {
+          pageNumber: 1,
+          categoryId: null,
+          showCategoryHeader: false,
+          items: filteredItems,
+          startItemIndex: 0,
+        },
+      ];
+    }
+    return computeMenuPages(filteredItems, activeLayout, {
+      showCategoryNames,
+      itemsPerPageOverride: filteredItems.length || undefined,
+    });
+  }, [filteredItems, activeLayout, showCategoryNames, isSpotlight]);
 
   const { width: pxW, height: pxH } = getCanvasPixelSize(canvasSize);
 
@@ -90,6 +102,7 @@ const MenuPreviewCanvas = forwardRef<HTMLDivElement>(function MenuPreviewCanvas(
           restaurantInfo={restaurantInfo}
           footer={footer}
           activeLayout={activeLayout}
+          isSpotlight={isSpotlight}
         />
       </motion.div>
     </AnimatePresence>

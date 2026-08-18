@@ -16,6 +16,7 @@ import VerticalGridLayout from "@/components/menu-designer/layouts/VerticalGridL
 import HorizontalRowLayout from "@/components/menu-designer/layouts/HorizontalRowLayout";
 import TextOnlyLayout from "@/components/menu-designer/layouts/TextOnlyLayout";
 import TextRowLayout from "@/components/menu-designer/layouts/TextRowLayout";
+import SpotlightLayout from "@/components/menu-designer/layouts/SpotlightLayout";
 
 const LAYOUT_MAP: Record<LayoutStyle, typeof VerticalGridLayout> = {
   "vertical-grid": VerticalGridLayout,
@@ -50,6 +51,7 @@ export interface MenuPageViewProps {
   footer: FooterSettings;
   activeLayout: LayoutStyle;
   isExport?: boolean;
+  isSpotlight?: boolean;
 }
 
 export default function MenuPageView({
@@ -63,6 +65,7 @@ export default function MenuPageView({
   footer,
   activeLayout,
   isExport,
+  isSpotlight,
 }: MenuPageViewProps) {
   const { width: pxW, height: pxH } = getCanvasPixelSize(canvasSize);
   const LayoutComponent = LAYOUT_MAP[activeLayout];
@@ -132,16 +135,20 @@ export default function MenuPageView({
 
       {/* Layout content — all pages stacked */}
       <div className="relative z-10 flex flex-1 flex-col">
-        {pages.map((page, i) => (
-          <LayoutComponent
-            key={`${page.categoryId ?? "flat"}-${i}`}
-            items={page.items}
-            showCategoryHeader={page.showCategoryHeader}
-            categoryId={page.categoryId}
-            startIndex={page.startItemIndex}
-            isExport={isExport}
-          />
-        ))}
+        {isSpotlight && pages[0] ? (
+          <SpotlightLayout items={pages[0].items} layoutStyle={activeLayout} isExport={isExport} />
+        ) : (
+          pages.map((page, i) => (
+            <LayoutComponent
+              key={`${page.categoryId ?? "flat"}-${i}`}
+              items={page.items}
+              showCategoryHeader={page.showCategoryHeader}
+              categoryId={page.categoryId}
+              startIndex={page.startItemIndex}
+              isExport={isExport}
+            />
+          ))
+        )}
       </div>
 
       {/* Footer — brand signature wordmark */}
