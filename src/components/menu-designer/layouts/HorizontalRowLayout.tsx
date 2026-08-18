@@ -6,7 +6,7 @@ import { useMenuDesigner, type PageLayoutProps } from "@/hooks/useMenuDesigner";
 import { getResponsiveScale } from "@/lib/responsiveScale";
 
 export default function HorizontalRowLayout({ items, showCategoryHeader, categoryId, isExport }: PageLayoutProps) {
-  const { theme, setSelectedItemId } = useMenuDesigner();
+  const { theme, setSelectedItemId, menuBorder } = useMenuDesigner();
   const scale = getResponsiveScale(items.length);
 
   const imgSq = Math.round(90 * scale);
@@ -39,10 +39,11 @@ export default function HorizontalRowLayout({ items, showCategoryHeader, categor
       initial={isExport ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.25 }}
-      className="mx-auto flex max-w-2xl flex-col px-6 py-8"
+      className="flex h-full w-full flex-col"
+      style={{ padding: `${menuBorder.paddingY}px ${menuBorder.paddingX}px` }}
     >
       {showCategoryHeader && categoryId && <CategoryHeader categoryId={categoryId} />}
-      <div className="flex flex-col" style={{ gap: `${gap}px` }}>
+      <div className="flex flex-1 min-h-0 flex-col" style={{ gap: `${gap}px` }}>
         {items.map((item, i) => (
           <motion.button
             key={item.id}
@@ -52,7 +53,7 @@ export default function HorizontalRowLayout({ items, showCategoryHeader, categor
             transition={{ duration: 0.3, delay: i * 0.04 }}
             whileHover={{ y: -1 }}
             onClick={() => setSelectedItemId(item.id)}
-            className={`flex items-start gap-5 ${i % 2 === 0 ? "flex-row text-left" : "flex-row-reverse text-right"}`}
+            className={`flex flex-1 min-h-0 items-center gap-5 ${i % 2 === 0 ? "flex-row text-left" : "flex-row-reverse text-right"}`}
           >
             {showImage && item.image ? (
               <img

@@ -1,25 +1,25 @@
 /**
  * Smoothly interpolates a scale factor based on item count.
  *
- *   1 item  → 2.0  (hero-sized)
- *   2 items → 1.7
- *   4 items → 1.35
- *   6 items → 1.15
- *   8 items → 1.0  (default)
- *  12 items → 0.8
- *  16+items → 0.65 (compact)
+ *   1 item  → 3.0  (hero-sized)
+ *   2 items → 2.4
+ *   4 items → 1.9
+ *   6 items → 1.6
+ *   8 items → 1.35 (default)
+ *  12 items → 1.05
+ *  16+items → 0.85 (compact)
  *
  * Between breakpoints the value is linearly interpolated so there are no
  * abrupt jumps as the user toggles items on/off.
  */
 const BREAKPOINTS: readonly [n: number, s: number][] = [
-  [1, 2.0],
-  [2, 1.7],
-  [4, 1.35],
-  [6, 1.15],
-  [8, 1.0],
-  [12, 0.8],
-  [16, 0.65],
+  [1, 3.0],
+  [2, 2.4],
+  [4, 1.9],
+  [6, 1.6],
+  [8, 1.35],
+  [12, 1.05],
+  [16, 0.85],
 ];
 
 export function getResponsiveScale(itemCount: number): number {
@@ -50,4 +50,10 @@ const SPOTLIGHT_SCALE: Record<1 | 2 | 3, number> = {
 export function getSpotlightScale(itemCount: number): number {
   const n = Math.min(3, Math.max(1, itemCount)) as 1 | 2 | 3;
   return SPOTLIGHT_SCALE[n];
+}
+
+export function getGridColumns(itemCount: number): number {
+  if (itemCount <= 1) return 1;
+  if (itemCount <= 3) return 2;
+  return Math.min(6, Math.ceil(itemCount / 3));
 }

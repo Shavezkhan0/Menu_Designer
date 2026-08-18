@@ -154,7 +154,7 @@ export default function MenuPageView({
       {/* Footer — brand signature wordmark */}
       {footer.showBrandSignature && footer.brandText && (
         <div
-          className="relative z-10 px-6 py-8 text-center overflow-hidden"
+          className="relative z-10 px-6 pt-8 pb-24 text-center overflow-hidden"
         >
           <p
             style={{

@@ -6,7 +6,7 @@ import { useMenuDesigner, type PageLayoutProps } from "@/hooks/useMenuDesigner";
 import { getResponsiveScale } from "@/lib/responsiveScale";
 
 export default function TextRowLayout({ items, showCategoryHeader, categoryId, isExport }: PageLayoutProps) {
-  const { theme, setSelectedItemId } = useMenuDesigner();
+  const { theme, setSelectedItemId, menuBorder } = useMenuDesigner();
   const scale = getResponsiveScale(items.length);
 
   const headingPx = `${Math.round(14 * scale)}px`;
@@ -18,10 +18,11 @@ export default function TextRowLayout({ items, showCategoryHeader, categoryId, i
       initial={isExport ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.25 }}
-      className="mx-auto flex max-w-2xl flex-col px-6 py-8"
+      className="flex h-full w-full flex-col"
+      style={{ padding: `${menuBorder.paddingY}px ${menuBorder.paddingX}px` }}
     >
       {showCategoryHeader && categoryId && <CategoryHeader categoryId={categoryId} />}
-      <div className="flex flex-col" style={{ gap: `${gap}px` }}>
+      <div className="flex flex-1 min-h-0 flex-col" style={{ gap: `${gap}px` }}>
         {items.map((item, i) => (
           <motion.button
             key={item.id}
@@ -31,7 +32,7 @@ export default function TextRowLayout({ items, showCategoryHeader, categoryId, i
             transition={{ duration: 0.3, delay: i * 0.04 }}
             whileHover={{ y: -2 }}
             onClick={() => setSelectedItemId(item.id)}
-            className="flex flex-col items-center text-center"
+            className="flex flex-1 min-h-0 flex-col items-center justify-center text-center"
           >
             <h3
               className="font-bold leading-tight"

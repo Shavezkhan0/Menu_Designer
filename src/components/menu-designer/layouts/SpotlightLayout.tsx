@@ -18,7 +18,7 @@ const BASE_RECT_W = 230;
 const BASE_RECT_H = 170;
 
 export default function SpotlightLayout({ items, layoutStyle, isExport }: SpotlightLayoutProps) {
-  const { theme, setSelectedItemId } = useMenuDesigner();
+  const { theme, setSelectedItemId, menuBorder } = useMenuDesigner();
 
   const arrangement = getSpotlightArrangement(items.length, layoutStyle);
   if (!arrangement) return null;
@@ -183,14 +183,15 @@ export default function SpotlightLayout({ items, layoutStyle, isExport }: Spotli
     );
   }
 
-  const Card = isGridish ? VerticalCard : HorizontalCard;
+  const Card = layoutStyle === "horizontal-row" ? HorizontalCard : VerticalCard;
 
   return (
     <motion.div
       initial={isExport ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.25 }}
-      className="flex flex-1 flex-col h-full w-full px-10 py-10"
+      className="flex flex-1 flex-col h-full w-full"
+      style={{ padding: `${menuBorder.paddingY}px ${menuBorder.paddingX}px` }}
     >
       {arrangement === "single" && (
         <div className="flex flex-1 items-center justify-center">

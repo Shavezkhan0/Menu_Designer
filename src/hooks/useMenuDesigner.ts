@@ -170,7 +170,7 @@ export const useMenuDesigner = create<MenuDesignerState>((set) => ({
     size: 2,
     offsetX: 0,
     offsetY: 0,
-    paddingX: 20,
+    paddingX: 120,
     paddingY: 32,
   },
   selectedItemId: null,

@@ -3,11 +3,13 @@
 import { motion } from "framer-motion";
 import CategoryHeader from "@/components/menu-designer/MenuPreview/CategoryHeader";
 import { useMenuDesigner, type PageLayoutProps } from "@/hooks/useMenuDesigner";
-import { getResponsiveScale } from "@/lib/responsiveScale";
+import { getResponsiveScale, getGridColumns } from "@/lib/responsiveScale";
 
 export default function VerticalGridLayout({ items, showCategoryHeader, categoryId, isExport }: PageLayoutProps) {
-  const { theme, setSelectedItemId } = useMenuDesigner();
+  const { theme, setSelectedItemId, menuBorder } = useMenuDesigner();
   const scale = getResponsiveScale(items.length);
+
+  const columns = getGridColumns(items.length);
 
   const imgW = Math.round(120 * scale);
   const imgH = Math.round(120 * scale);
@@ -41,13 +43,17 @@ export default function VerticalGridLayout({ items, showCategoryHeader, category
       initial={isExport ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.25 }}
-      className="mx-auto flex max-w-2xl flex-col px-6 py-8"
+      className="flex h-full w-full flex-col"
+      style={{ padding: `${menuBorder.paddingY}px ${menuBorder.paddingX}px` }}
     >
       {showCategoryHeader && categoryId && <CategoryHeader categoryId={categoryId} />}
       <div
-        className="grid"
+        className="grid flex-1 min-h-0"
         style={{
-          gridTemplateColumns: items.length <= 1 ? "1fr" : "repeat(2, 1fr)",
+          gridTemplateColumns: `repeat(${columns}, 1fr)`,
+          gridAutoRows: "1fr",
+          alignItems: "center",
+          justifyItems: "center",
           gap: `${gap}px ${colGap}px`,
         }}
       >
