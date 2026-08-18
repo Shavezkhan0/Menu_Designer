@@ -62,6 +62,13 @@ export interface MenuBorderSettings {
   paddingY: number;
 }
 
+export interface FreeItemPosition {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export type BackgroundType = "color" | "gradient" | "image";
 
 export interface BackgroundSettings {
@@ -80,6 +87,7 @@ export interface PageLayoutProps {
   categoryId: string | null;
   startIndex: number;
   isExport?: boolean;
+  displayScale?: number;
 }
 
 export interface CanvasSize {
@@ -127,6 +135,7 @@ interface MenuDesignerState {
   showCategoryNames: boolean;
   showHeader: boolean;
   footer: FooterSettings;
+  freePositions: Record<string, FreeItemPosition>;
   toggleCategory: (id: string) => void;
   setActiveLayout: (layout: LayoutStyle) => void;
   setCanvasSize: (size: CanvasSize) => void;
@@ -136,6 +145,8 @@ interface MenuDesignerState {
   setBackground: (partial: Partial<BackgroundSettings>) => void;
   setMenuBorder: (border: Partial<MenuBorderSettings>) => void;
   setSelectedItemId: (id: string | null) => void;
+  setFreePosition: (id: string, position: FreeItemPosition) => void;
+  clearFreePositions: () => void;
   setActiveSidebarSection: (section: string | null) => void;
   setIsAIPanelOpen: (open: boolean) => void;
   setActiveBrowseCategory: (id: string | null) => void;
@@ -181,13 +192,15 @@ export const useMenuDesigner = create<MenuDesignerState>((set) => ({
   showCategoryNames: true,
   showHeader: false,
   footer: { showBrandSignature: true, brandText: "DeliCocktailHouse" },
+  freePositions: {},
   toggleCategory: (id) =>
     set((state) => ({
       selectedCategories: state.selectedCategories.includes(id)
         ? state.selectedCategories.filter((c) => c !== id)
         : [...state.selectedCategories, id],
+      freePositions: {},
     })),
-  setActiveLayout: (layout) => set({ activeLayout: layout }),
+  setActiveLayout: (layout) => set({ activeLayout: layout, freePositions: {} }),
   setCanvasSize: (size) => set({ canvasSize: size }),
   setZoom: (zoom) => set({ zoom }),
   setRestaurantInfo: (info) =>
@@ -210,6 +223,11 @@ export const useMenuDesigner = create<MenuDesignerState>((set) => ({
     set((state) => ({
       menuBorder: { ...state.menuBorder, ...partial },
     })),
+  setFreePosition: (id, position) =>
+    set((state) => ({
+      freePositions: { ...state.freePositions, [id]: position },
+    })),
+  clearFreePositions: () => set({ freePositions: {} }),
   setSelectedItemId: (id) => set({ selectedItemId: id }),
   setActiveSidebarSection: (section) => set({ activeSidebarSection: section }),
   setIsAIPanelOpen: (open) => set({ isAIPanelOpen: open }),
@@ -219,6 +237,7 @@ export const useMenuDesigner = create<MenuDesignerState>((set) => ({
       selectedItemIds: state.selectedItemIds.includes(id)
         ? state.selectedItemIds.filter((i) => i !== id)
         : [...state.selectedItemIds, id],
+      freePositions: {},
     })),
   setShowCategoryNames: (show) => set({ showCategoryNames: show }),
   setShowHeader: (show) => set({ showHeader: show }),
@@ -235,6 +254,7 @@ export const useMenuDesigner = create<MenuDesignerState>((set) => ({
         selectedItemIds: state.selectedItemIds.filter(
           (id) => !idsToRemove.includes(id)
         ),
+        freePositions: {},
       };
     }),
 }));

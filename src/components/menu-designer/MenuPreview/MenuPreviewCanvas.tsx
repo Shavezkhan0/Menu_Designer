@@ -103,6 +103,7 @@ const MenuPreviewCanvas = forwardRef<HTMLDivElement>(function MenuPreviewCanvas(
           footer={footer}
           activeLayout={activeLayout}
           isSpotlight={isSpotlight}
+          displayScale={displayScale}
         />
       </motion.div>
     </AnimatePresence>

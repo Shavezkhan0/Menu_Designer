@@ -11,6 +11,7 @@ export interface SpotlightLayoutProps {
   items: MenuItem[];
   layoutStyle: LayoutStyle;
   isExport?: boolean;
+  displayScale?: number;
 }
 
 const BASE_SQ = 190;

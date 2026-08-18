@@ -4,6 +4,7 @@ import type { MenuPage } from "@/lib/pagination";
 import {
   getCanvasPixelSize,
   getBackgroundImageCss,
+  useMenuDesigner,
   type CanvasSize,
   type ThemeSettings,
   type BackgroundSettings,
@@ -17,6 +18,7 @@ import HorizontalRowLayout from "@/components/menu-designer/layouts/HorizontalRo
 import TextOnlyLayout from "@/components/menu-designer/layouts/TextOnlyLayout";
 import TextRowLayout from "@/components/menu-designer/layouts/TextRowLayout";
 import SpotlightLayout from "@/components/menu-designer/layouts/SpotlightLayout";
+import FreePositionOverlay from "./FreePositionOverlay";
 
 const LAYOUT_MAP: Record<LayoutStyle, typeof VerticalGridLayout> = {
   "vertical-grid": VerticalGridLayout,
@@ -52,6 +54,7 @@ export interface MenuPageViewProps {
   activeLayout: LayoutStyle;
   isExport?: boolean;
   isSpotlight?: boolean;
+  displayScale?: number;
 }
 
 export default function MenuPageView({
@@ -66,6 +69,7 @@ export default function MenuPageView({
   activeLayout,
   isExport,
   isSpotlight,
+  displayScale = 1,
 }: MenuPageViewProps) {
   const { width: pxW, height: pxH } = getCanvasPixelSize(canvasSize);
   const LayoutComponent = LAYOUT_MAP[activeLayout];
@@ -76,6 +80,22 @@ export default function MenuPageView({
       : background.type === "gradient"
         ? { backgroundImage: background.value }
         : { backgroundColor: background.value };
+
+  const { freePositions } = useMenuDesigner();
+  const pinnedIds = new Set(Object.keys(freePositions));
+
+  const filteredPages = pinnedIds.size === 0
+    ? pages
+    : pages.map((page) => ({
+        ...page,
+        items: page.items.filter((item) => !pinnedIds.has(item.id)),
+      }));
+
+  const pinnedItems = pinnedIds.size === 0
+    ? []
+    : pages.flatMap((page) => page.items).filter((item) => pinnedIds.has(item.id));
+
+  const spotlightItems = filteredPages[0]?.items ?? [];
 
   return (
     <div
@@ -135,10 +155,10 @@ export default function MenuPageView({
 
       {/* Layout content — all pages stacked */}
       <div className="relative z-10 flex flex-1 flex-col">
-        {isSpotlight && pages[0] ? (
-          <SpotlightLayout items={pages[0].items} layoutStyle={activeLayout} isExport={isExport} />
+        {isSpotlight && spotlightItems.length > 0 ? (
+          <SpotlightLayout items={spotlightItems} layoutStyle={activeLayout} isExport={isExport} displayScale={displayScale} />
         ) : (
-          pages.map((page, i) => (
+          filteredPages.map((page, i) => (
             <LayoutComponent
               key={`${page.categoryId ?? "flat"}-${i}`}
               items={page.items}
@@ -146,10 +166,23 @@ export default function MenuPageView({
               categoryId={page.categoryId}
               startIndex={page.startItemIndex}
               isExport={isExport}
+              displayScale={displayScale}
             />
           ))
         )}
       </div>
+
+      {/* Free-position overlay */}
+      {pinnedItems.length > 0 && (
+        <FreePositionOverlay
+          items={pinnedItems}
+          positions={freePositions}
+          theme={theme}
+          activeLayout={activeLayout}
+          displayScale={displayScale}
+          isExport={isExport}
+        />
+      )}
 
       {/* Footer — brand signature wordmark */}
       {footer.showBrandSignature && footer.brandText && (
