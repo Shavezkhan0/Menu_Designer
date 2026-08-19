@@ -69,6 +69,13 @@ export interface FreeItemPosition {
   height: number;
 }
 
+export interface PositionSnapshot {
+  freePositions: Record<string, FreeItemPosition>;
+  headerLogoPosition: FreeItemPosition | null;
+  headerHeadingPosition: FreeItemPosition | null;
+  footerPosition: FreeItemPosition | null;
+}
+
 export type BackgroundType = "color" | "gradient" | "image";
 
 export interface BackgroundSettings {
@@ -118,6 +125,22 @@ export function getDefaultCanvasSize(preset: CanvasPreset): CanvasSize {
   return { preset, ...s };
 }
 
+const MAX_POSITION_HISTORY = 50;
+
+function snapshotPositions(state: {
+  freePositions: Record<string, FreeItemPosition>;
+  headerLogoPosition: FreeItemPosition | null;
+  headerHeadingPosition: FreeItemPosition | null;
+  footerPosition: FreeItemPosition | null;
+}): PositionSnapshot {
+  return {
+    freePositions: state.freePositions,
+    headerLogoPosition: state.headerLogoPosition,
+    headerHeadingPosition: state.headerHeadingPosition,
+    footerPosition: state.footerPosition,
+  };
+}
+
 interface MenuDesignerState {
   selectedCategories: string[];
   activeLayout: LayoutStyle;
@@ -136,6 +159,14 @@ interface MenuDesignerState {
   showHeader: boolean;
   footer: FooterSettings;
   freePositions: Record<string, FreeItemPosition>;
+  headerLogoPosition: FreeItemPosition | null;
+  headerHeadingPosition: FreeItemPosition | null;
+  footerPosition: FreeItemPosition | null;
+  positionHistory: PositionSnapshot[];
+  setHeaderLogoPosition: (position: FreeItemPosition | null) => void;
+  setHeaderHeadingPosition: (position: FreeItemPosition | null) => void;
+  setFooterPosition: (position: FreeItemPosition | null) => void;
+  undoPosition: () => void;
   toggleCategory: (id: string) => void;
   setActiveLayout: (layout: LayoutStyle) => void;
   setCanvasSize: (size: CanvasSize) => void;
@@ -147,6 +178,7 @@ interface MenuDesignerState {
   setSelectedItemId: (id: string | null) => void;
   setFreePosition: (id: string, position: FreeItemPosition) => void;
   clearFreePositions: () => void;
+  clearFreePosition: (id: string) => void;
   setActiveSidebarSection: (section: string | null) => void;
   setIsAIPanelOpen: (open: boolean) => void;
   setActiveBrowseCategory: (id: string | null) => void;
@@ -193,6 +225,10 @@ export const useMenuDesigner = create<MenuDesignerState>((set) => ({
   showHeader: false,
   footer: { showBrandSignature: true, brandText: "DeliCocktailHouse" },
   freePositions: {},
+  headerLogoPosition: null,
+  headerHeadingPosition: null,
+  footerPosition: null,
+  positionHistory: [],
   toggleCategory: (id) =>
     set((state) => ({
       selectedCategories: state.selectedCategories.includes(id)
@@ -225,9 +261,47 @@ export const useMenuDesigner = create<MenuDesignerState>((set) => ({
     })),
   setFreePosition: (id, position) =>
     set((state) => ({
+      positionHistory: [...state.positionHistory.slice(-(MAX_POSITION_HISTORY - 1)), snapshotPositions(state)],
       freePositions: { ...state.freePositions, [id]: position },
     })),
-  clearFreePositions: () => set({ freePositions: {} }),
+  clearFreePositions: () =>
+    set((state) => ({
+      positionHistory: [...state.positionHistory.slice(-(MAX_POSITION_HISTORY - 1)), snapshotPositions(state)],
+      freePositions: {},
+    })),
+  clearFreePosition: (id) =>
+    set((state) => {
+      const next = { ...state.freePositions };
+      delete next[id];
+      return {
+        positionHistory: [...state.positionHistory.slice(-(MAX_POSITION_HISTORY - 1)), snapshotPositions(state)],
+        freePositions: next,
+      };
+    }),
+  setHeaderLogoPosition: (position) =>
+    set((state) => ({
+      positionHistory: [...state.positionHistory.slice(-(MAX_POSITION_HISTORY - 1)), snapshotPositions(state)],
+      headerLogoPosition: position,
+    })),
+  setHeaderHeadingPosition: (position) =>
+    set((state) => ({
+      positionHistory: [...state.positionHistory.slice(-(MAX_POSITION_HISTORY - 1)), snapshotPositions(state)],
+      headerHeadingPosition: position,
+    })),
+  setFooterPosition: (position) =>
+    set((state) => ({
+      positionHistory: [...state.positionHistory.slice(-(MAX_POSITION_HISTORY - 1)), snapshotPositions(state)],
+      footerPosition: position,
+    })),
+  undoPosition: () =>
+    set((state) => {
+      if (state.positionHistory.length === 0) return {};
+      const previous = state.positionHistory[state.positionHistory.length - 1];
+      return {
+        ...previous,
+        positionHistory: state.positionHistory.slice(0, -1),
+      };
+    }),
   setSelectedItemId: (id) => set({ selectedItemId: id }),
   setActiveSidebarSection: (section) => set({ activeSidebarSection: section }),
   setIsAIPanelOpen: (open) => set({ isAIPanelOpen: open }),
@@ -254,7 +328,6 @@ export const useMenuDesigner = create<MenuDesignerState>((set) => ({
         selectedItemIds: state.selectedItemIds.filter(
           (id) => !idsToRemove.includes(id)
         ),
-        freePositions: {},
       };
     }),
 }));

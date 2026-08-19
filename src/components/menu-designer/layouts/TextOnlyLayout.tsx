@@ -4,9 +4,20 @@ import { motion } from "framer-motion";
 import CategoryHeader from "@/components/menu-designer/MenuPreview/CategoryHeader";
 import { useMenuDesigner, type PageLayoutProps } from "@/hooks/useMenuDesigner";
 import { getResponsiveScale, getGridColumns } from "@/lib/responsiveScale";
+import { screenRectToCanvasBox } from "@/lib/freePosition";
 
-export default function TextOnlyLayout({ items, showCategoryHeader, categoryId, isExport }: PageLayoutProps) {
-  const { theme, setSelectedItemId, menuBorder } = useMenuDesigner();
+export default function TextOnlyLayout({ items, showCategoryHeader, categoryId, isExport, displayScale }: PageLayoutProps) {
+  const { theme, setSelectedItemId, menuBorder, setFreePosition, selectedItemId } = useMenuDesigner();
+
+  function handlePin(e: React.MouseEvent<HTMLButtonElement>, itemId: string) {
+    if (isExport) return;
+    const itemRect = e.currentTarget.getBoundingClientRect();
+    const canvasEl = document.getElementById("menu-preview-content");
+    if (!canvasEl) return;
+    const canvasRect = canvasEl.getBoundingClientRect();
+    const box = screenRectToCanvasBox(itemRect, canvasRect, displayScale ?? 1);
+    setFreePosition(itemId, box);
+  }
   const scale = getResponsiveScale(items.length);
 
   const columns = getGridColumns(items.length);
@@ -44,7 +55,14 @@ export default function TextOnlyLayout({ items, showCategoryHeader, categoryId, 
             transition={{ duration: 0.3, delay: i * 0.04 }}
             whileHover={{ y: -2 }}
             onClick={() => setSelectedItemId(item.id)}
+            onDoubleClick={(e) => handlePin(e, item.id)}
             className="flex flex-col items-center text-center"
+            data-canvas-item="true"
+            style={{
+              outline: selectedItemId === item.id ? `2px solid ${theme.primaryColor}` : "none",
+              outlineOffset: "2px",
+              borderRadius: "6px",
+            }}
           >
             <h3
               className="font-bold leading-tight"

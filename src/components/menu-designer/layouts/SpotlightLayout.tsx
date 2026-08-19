@@ -6,6 +6,7 @@ import type { LayoutStyle } from "@/hooks/useMenuDesigner";
 import type { MenuItem } from "@/data/menuData";
 import { getSpotlightArrangement, spotlightShowsImage } from "@/lib/spotlight";
 import { getSpotlightScale } from "@/lib/responsiveScale";
+import { screenRectToCanvasBox } from "@/lib/freePosition";
 
 export interface SpotlightLayoutProps {
   items: MenuItem[];
@@ -18,8 +19,8 @@ const BASE_SQ = 190;
 const BASE_RECT_W = 230;
 const BASE_RECT_H = 170;
 
-export default function SpotlightLayout({ items, layoutStyle, isExport }: SpotlightLayoutProps) {
-  const { theme, setSelectedItemId, menuBorder } = useMenuDesigner();
+export default function SpotlightLayout({ items, layoutStyle, isExport, displayScale }: SpotlightLayoutProps) {
+  const { theme, setSelectedItemId, menuBorder, setFreePosition, selectedItemId } = useMenuDesigner();
 
   const arrangement = getSpotlightArrangement(items.length, layoutStyle);
   if (!arrangement) return null;
@@ -62,6 +63,7 @@ export default function SpotlightLayout({ items, layoutStyle, isExport }: Spotli
         <img
           src={item.image}
           alt={item.name}
+          draggable={false}
           className="mb-3"
           style={{
             ...imgStyle,
@@ -92,6 +94,7 @@ export default function SpotlightLayout({ items, layoutStyle, isExport }: Spotli
         <img
           src={item.image}
           alt={item.name}
+          draggable={false}
           className="shrink-0"
           style={{
             ...imgStyle,
@@ -115,6 +118,16 @@ export default function SpotlightLayout({ items, layoutStyle, isExport }: Spotli
     );
   }
 
+  function handlePin(e: React.MouseEvent<HTMLButtonElement>, itemId: string) {
+    if (isExport) return;
+    const itemRect = e.currentTarget.getBoundingClientRect();
+    const canvasEl = document.getElementById("menu-preview-content");
+    if (!canvasEl) return;
+    const canvasRect = canvasEl.getBoundingClientRect();
+    const box = screenRectToCanvasBox(itemRect, canvasRect, displayScale ?? 1);
+    setFreePosition(itemId, box);
+  }
+
   function VerticalCard({ item }: { item: MenuItem }) {
     const imgStyle = buildImageStyle(theme.imageShape);
     return (
@@ -125,7 +138,14 @@ export default function SpotlightLayout({ items, layoutStyle, isExport }: Spotli
         transition={{ duration: 0.3 }}
         whileHover={{ y: -2 }}
         onClick={() => setSelectedItemId(item.id)}
+        onDoubleClick={(e) => handlePin(e, item.id)}
         className="flex flex-col items-center text-center"
+        data-canvas-item="true"
+        style={{
+          outline: selectedItemId === item.id ? `2px solid ${theme.primaryColor}` : "none",
+          outlineOffset: "2px",
+          borderRadius: "6px",
+        }}
       >
         {renderImage(item, imgStyle)}
         <h3
@@ -159,7 +179,14 @@ export default function SpotlightLayout({ items, layoutStyle, isExport }: Spotli
         transition={{ duration: 0.3 }}
         whileHover={{ y: -1 }}
         onClick={() => setSelectedItemId(item.id)}
+        onDoubleClick={(e) => handlePin(e, item.id)}
         className={`flex items-start gap-5 ${index % 2 === 0 ? "flex-row text-left" : "flex-row-reverse text-right"}`}
+        data-canvas-item="true"
+        style={{
+          outline: selectedItemId === item.id ? `2px solid ${theme.primaryColor}` : "none",
+          outlineOffset: "2px",
+          borderRadius: "6px",
+        }}
       >
         {renderImageHorizontal(item, imgStyle)}
         <div className="flex flex-1 flex-col justify-center pt-1">

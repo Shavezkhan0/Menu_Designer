@@ -4,9 +4,20 @@ import { motion } from "framer-motion";
 import CategoryHeader from "@/components/menu-designer/MenuPreview/CategoryHeader";
 import { useMenuDesigner, type PageLayoutProps } from "@/hooks/useMenuDesigner";
 import { getResponsiveScale } from "@/lib/responsiveScale";
+import { screenRectToCanvasBox } from "@/lib/freePosition";
 
-export default function HorizontalRowLayout({ items, showCategoryHeader, categoryId, isExport }: PageLayoutProps) {
-  const { theme, setSelectedItemId, menuBorder } = useMenuDesigner();
+export default function HorizontalRowLayout({ items, showCategoryHeader, categoryId, isExport, displayScale }: PageLayoutProps) {
+  const { theme, setSelectedItemId, menuBorder, setFreePosition, selectedItemId } = useMenuDesigner();
+
+  function handlePin(e: React.MouseEvent<HTMLButtonElement>, itemId: string) {
+    if (isExport) return;
+    const itemRect = e.currentTarget.getBoundingClientRect();
+    const canvasEl = document.getElementById("menu-preview-content");
+    if (!canvasEl) return;
+    const canvasRect = canvasEl.getBoundingClientRect();
+    const box = screenRectToCanvasBox(itemRect, canvasRect, displayScale ?? 1);
+    setFreePosition(itemId, box);
+  }
   const scale = getResponsiveScale(items.length);
 
   const imgSq = Math.round(90 * scale);
@@ -53,12 +64,20 @@ export default function HorizontalRowLayout({ items, showCategoryHeader, categor
             transition={{ duration: 0.3, delay: i * 0.04 }}
             whileHover={{ y: -1 }}
             onClick={() => setSelectedItemId(item.id)}
+            onDoubleClick={(e) => handlePin(e, item.id)}
             className={`flex flex-1 min-h-0 items-center gap-5 ${i % 2 === 0 ? "flex-row text-left" : "flex-row-reverse text-right"}`}
+            data-canvas-item="true"
+            style={{
+              outline: selectedItemId === item.id ? `2px solid ${theme.primaryColor}` : "none",
+              outlineOffset: "2px",
+              borderRadius: "6px",
+            }}
           >
             {showImage && item.image ? (
               <img
                 src={item.image}
                 alt={item.name}
+                draggable={false}
                 className="shrink-0"
                 style={{
                   ...imgStyle,

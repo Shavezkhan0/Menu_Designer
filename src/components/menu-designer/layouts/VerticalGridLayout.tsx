@@ -4,9 +4,20 @@ import { motion } from "framer-motion";
 import CategoryHeader from "@/components/menu-designer/MenuPreview/CategoryHeader";
 import { useMenuDesigner, type PageLayoutProps } from "@/hooks/useMenuDesigner";
 import { getResponsiveScale, getGridColumns } from "@/lib/responsiveScale";
+import { screenRectToCanvasBox } from "@/lib/freePosition";
 
-export default function VerticalGridLayout({ items, showCategoryHeader, categoryId, isExport }: PageLayoutProps) {
-  const { theme, setSelectedItemId, menuBorder } = useMenuDesigner();
+export default function VerticalGridLayout({ items, showCategoryHeader, categoryId, isExport, displayScale }: PageLayoutProps) {
+  const { theme, setSelectedItemId, menuBorder, setFreePosition, selectedItemId } = useMenuDesigner();
+
+  function handlePin(e: React.MouseEvent<HTMLButtonElement>, itemId: string) {
+    if (isExport) return;
+    const itemRect = e.currentTarget.getBoundingClientRect();
+    const canvasEl = document.getElementById("menu-preview-content");
+    if (!canvasEl) return;
+    const canvasRect = canvasEl.getBoundingClientRect();
+    const box = screenRectToCanvasBox(itemRect, canvasRect, displayScale ?? 1);
+    setFreePosition(itemId, box);
+  }
   const scale = getResponsiveScale(items.length);
 
   const columns = getGridColumns(items.length);
@@ -38,6 +49,12 @@ export default function VerticalGridLayout({ items, showCategoryHeader, category
   const imgStyle = getImageStyle();
   const showImage = theme.imageShape !== "none";
 
+  const fullRowCount = Math.floor(items.length / columns);
+  const remainder = items.length % columns;
+  const fullRowItems = items.slice(0, fullRowCount * columns);
+  const lastRowItems = items.slice(fullRowCount * columns);
+  const lastRowColStart = remainder > 0 ? Math.floor((columns - remainder) / 2) + 1 : 1;
+
   return (
     <motion.div
       initial={isExport ? false : { opacity: 0 }}
@@ -57,7 +74,7 @@ export default function VerticalGridLayout({ items, showCategoryHeader, category
           gap: `${gap}px ${colGap}px`,
         }}
       >
-        {items.map((item, i) => (
+        {fullRowItems.map((item, i) => (
           <motion.button
             key={item.id}
             type="button"
@@ -66,12 +83,82 @@ export default function VerticalGridLayout({ items, showCategoryHeader, category
             transition={{ duration: 0.3, delay: i * 0.04 }}
             whileHover={{ y: -2 }}
             onClick={() => setSelectedItemId(item.id)}
+            onDoubleClick={(e) => handlePin(e, item.id)}
             className="flex flex-col items-center text-center"
+            data-canvas-item="true"
+            style={{
+              outline: selectedItemId === item.id ? `2px solid ${theme.primaryColor}` : "none",
+              outlineOffset: "2px",
+              borderRadius: "6px",
+            }}
           >
             {showImage && item.image && imgStyle ? (
               <img
                 src={item.image}
                 alt={item.name}
+                draggable={false}
+                className="mb-3"
+                style={{
+                  ...imgStyle,
+                  filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.15))",
+                }}
+              />
+            ) : showImage ? (
+              <div
+                className="mb-3 flex items-center justify-center"
+                style={{
+                  ...imgStyle!,
+                  backgroundColor: "rgba(0,0,0,0.04)",
+                  fontSize: `${Math.round(36 * scale)}px`,
+                  lineHeight: 1,
+                }}
+              >
+                🍸
+              </div>
+            ) : null}
+            <h3
+              className="font-bold leading-tight"
+              style={{
+                fontFamily: theme.fontFamily,
+                color: theme.headingColor,
+                letterSpacing: "0.04em",
+                fontSize: headingPx,
+              }}
+            >
+              {item.name}
+            </h3>
+            <p
+              className="mt-1.5 line-clamp-3 leading-relaxed"
+              style={{ color: theme.subheadingColor, fontSize: descPx }}
+            >
+              {item.description}
+            </p>
+          </motion.button>
+        ))}
+        {lastRowItems.map((item, i) => (
+          <motion.button
+            key={item.id}
+            type="button"
+            initial={isExport ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3, delay: (fullRowCount * columns + i) * 0.04 }}
+            whileHover={{ y: -2 }}
+            onClick={() => setSelectedItemId(item.id)}
+            onDoubleClick={(e) => handlePin(e, item.id)}
+            className="flex flex-col items-center text-center"
+            data-canvas-item="true"
+            style={{
+              gridColumnStart: lastRowColStart + i,
+              outline: selectedItemId === item.id ? `2px solid ${theme.primaryColor}` : "none",
+              outlineOffset: "2px",
+              borderRadius: "6px",
+            }}
+          >
+            {showImage && item.image && imgStyle ? (
+              <img
+                src={item.image}
+                alt={item.name}
+                draggable={false}
                 className="mb-3"
                 style={{
                   ...imgStyle,

@@ -10,21 +10,36 @@ import { isSpotlightMode } from "@/lib/spotlight";
 import MenuPageView from "./MenuPageView";
 
 const MenuPreviewCanvas = forwardRef<HTMLDivElement>(function MenuPreviewCanvas(_props, ref) {
-  const {
-    selectedCategories,
-    selectedItemIds,
-    activeLayout,
-    theme,
-    background,
-    menuBorder,
-    canvasSize,
-    zoom,
-    showHeader,
-    showCategoryNames,
-    restaurantInfo,
-    footer,
-    setActiveSidebarSection,
-  } = useMenuDesigner();
+  const selectedCategories = useMenuDesigner((s) => s.selectedCategories);
+  const selectedItemIds = useMenuDesigner((s) => s.selectedItemIds);
+  const activeLayout = useMenuDesigner((s) => s.activeLayout);
+  const theme = useMenuDesigner((s) => s.theme);
+  const background = useMenuDesigner((s) => s.background);
+  const menuBorder = useMenuDesigner((s) => s.menuBorder);
+  const canvasSize = useMenuDesigner((s) => s.canvasSize);
+  const zoom = useMenuDesigner((s) => s.zoom);
+  const showHeader = useMenuDesigner((s) => s.showHeader);
+  const showCategoryNames = useMenuDesigner((s) => s.showCategoryNames);
+  const restaurantInfo = useMenuDesigner((s) => s.restaurantInfo);
+  const footer = useMenuDesigner((s) => s.footer);
+  const setActiveSidebarSection = useMenuDesigner((s) => s.setActiveSidebarSection);
+
+  const undoPosition = useMenuDesigner((s) => s.undoPosition);
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      const isUndo = (e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === "z";
+      if (!isUndo) return;
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || target?.isContentEditable) return;
+      e.preventDefault();
+      undoPosition();
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [undoPosition]);
+
   const hasSelectedItems = selectedItemIds.length > 0;
 
   const filteredItems =
